@@ -1,6 +1,8 @@
 (ns net.philh.cloggle
   (:import [javax.media.opengl GL]))
 
+;; Uncomment this, and the later (comment), to time how long cloggle takes to
+;; initialise.
 (comment
   (println "cloggle loading")
   (def t1 (. java.lang.System nanoTime)))
@@ -45,6 +47,7 @@ metadata."
 (doall (map #(def-ev (symbol (% :name)) (% :value)) gl-fields))
 (doall (map defn-from-method gl-methods))
 
+;; This is the "later (comment)" referred to above.
 (comment
   (println "cloggle took"
 	   (double (/ (- (. java.lang.System nanoTime) t1) 1000000))

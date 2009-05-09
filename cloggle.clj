@@ -44,8 +44,10 @@ metadata."
       (fn [& args]
 	(.invoke meth opengl-context (to-array args)))))
 
-(doall (map #(def-ev (symbol (% :name)) (% :value)) gl-fields))
-(doall (map defn-from-method gl-methods))
+(doseq [i gl-fields]
+  (def-ev (symbol (i :name)) (i :value)))
+(doseq [i gl-methods]
+  (defn-from-method i))
 
 ;; This is the "later (comment)" referred to above.
 (comment

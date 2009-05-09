@@ -2,8 +2,8 @@ OVERVIEW
 
 cloggle provides a Clojure interface to OpenGL through JOGL. It is currently
 very thin. Almost all opengl functions should be supported, but due to
-implementation details, there are some (eg. glDrawPixels) which may not work
-yet. At the moment only the GL interface is implemented; there is no support for
+implementation details, there are some which may not work yet (see bug #2). At
+the moment only the GL interface is implemented; there is no support for
 GLAutoDrawable or the like.
 
 A GL object can be interfaced with using the ctx macro, which initialises a
@@ -44,9 +44,11 @@ expecting a Double, but not the other way around. You can't pass a Ratio to
 anything.
 
 When multiple methods sharing a name are provided by JOGL, only one of these can
-be accessed from cloggle. No guarantee is made as to which, but presumably it
-will be whichever one shows up last in the array returned by (.getDeclaredMethods
-javax.media.opengl.GL).
+be accessed from cloggle. It will be whichever one shows up last in the array
+returned by (.getDeclaredMethods javax.media.opengl.GL). I assume (but have done
+no research to check) that's consistent between environments, so it's probably
+safe to use as long as you know which method you're getting. At least one of
+these functions, glLightfv, is used by the example gears program.
 
 FUTURE PLANS
 
@@ -54,5 +56,6 @@ FUTURE PLANS
 * Rename functions and fields: glMatrixMode -> matrix-mode, GL_DEPTH_BUFFER_BIT
   -> depth-buffer-bit.
 * When the 'same' function goes by multiple names (eg. glVertex -> glVertex2f,
-  glVertex2d, glVertex3f, etc.), make it available under a catch-all.
+  glVertex2d, glVertex3f, etc.), make it available under a catch-all (eg.
+  glVertex, or simply vertex if the rename has already happened).
 * Add support for GLAutoDrawable, GLEventListener and friends.

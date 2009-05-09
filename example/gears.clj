@@ -1,4 +1,4 @@
-;; Based on 's port of glxgears to clojure.
+;; Based on Dustin Withers' port of glxgears to clojure.
 (import '(java.awt Frame)
 	'(java.awt.event WindowListener WindowAdapter)
 	'(javax.media.opengl GLCanvas GLEventListener GL)

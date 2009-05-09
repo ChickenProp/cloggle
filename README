@@ -1,0 +1,58 @@
+OVERVIEW
+
+cloggle provides a Clojure interface to OpenGL through JOGL. It is currently
+very thin. Almost all opengl functions should be supported, but due to
+implementation details, there are some (eg. glDrawPixels) which may not work
+yet. At the moment only the GL interface is implemented; there is no support for
+GLAutoDrawable or the like.
+
+A GL object can be interfaced with using the ctx macro, which initialises a
+context for all calls to opengl functions which occur within its body. This is a
+dynamic context, so it will be in effect for functions called from within the
+body of ctx. The current context object can be accessed through the variable
+opengl-context.
+
+Within a context, functions and fields defined by opengl are exposed in the
+obvious manner: GL_FIELD, (glFunc arg1 arg2 ...). Functions operate only on the
+current context object; there is no way to pass a different one. But you can
+make a new call to ctx, or just use the java interop to the JOGL API directly.
+
+cloggle also provides the beg-end macro, which wraps its body between calls to
+glBegin and glEnd.
+
+Illustrative example (not working code):
+    (use 'net.philh.cloggle)
+    (def gl-obj (get-gl-object-somehow))
+    (ctx gl-obj
+      (glMatrixMode GL_PROJECTION)
+      (glOrtho 0 300 0 300 1 128)
+      (glMatrixMode GL_MODELVIEW)
+      (glTranslated 0 0 -10)
+
+      (glClear GL_DEPTH_BUFFER_BIT)
+      (glClear GL_COLOR_BUFFER_BIT)
+      (beg-end GL_TRIANGLES
+        (glVertex3d 30 0 0)
+        (glVertex3d 0 30 0)
+        (glVertex3d 0 0 0)))
+
+BUGS
+
+The only typecasting is that provided by the JVM (I think). So you can pass an
+Integer to a function expecting a Float or a Double, and a Float to a function
+expecting a Double, but not the other way around. You can't pass a Ratio to
+anything.
+
+When multiple methods sharing a name are provided by JOGL, only one of these can
+be accessed from cloggle. No guarantee is made as to which, but presumably it
+will be whichever one shows up last in the array returned by (.getDeclaredMethods
+javax.media.opengl.GL).
+
+FUTURE PLANS
+
+* Fix those bugs.
+* Rename functions and fields: glMatrixMode -> matrix-mode, GL_DEPTH_BUFFER_BIT
+  -> depth-buffer-bit.
+* When the 'same' function goes by multiple names (eg. glVertex -> glVertex2f,
+  glVertex2d, glVertex3f, etc.), make it available under a catch-all.
+* Add support for GLAutoDrawable, GLEventListener and friends.

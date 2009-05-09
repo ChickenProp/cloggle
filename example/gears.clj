@@ -24,146 +24,145 @@
         (list '. 'gl 'glEnd)))
 
 (defn gear 
-  [#^javax.media.opengl.GL gl inner-radius outer-radius width teeth tooth-depth]
+  [inner-radius outer-radius width teeth tooth-depth]
   (let [r0 inner-radius
 	r1 (- outer-radius (/ tooth-depth 2.0))
 	r2 (+ outer-radius (/ tooth-depth 2.0))
 	da (* 2.0 (/ (. Math PI) teeth 4.0))
 	+width (* width 0.5)
 	-width (* width -0.5)]
-    (ctx gl
-      (glShadeModel GL_FLAT)
-      (glNormal3d 0.0 0.0 1.0)
+    (glShadeModel GL_FLAT)
+    (glNormal3d 0.0 0.0 1.0)
 
-      ;; draw front face
-      (beg-end GL_QUAD_STRIP
-	 (doseq [i (range (+ 1 teeth))]
-	   (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
-	     (glVertex3d (* r0 (. Math cos angle))
-			 (* r0 (. Math sin angle))
-			 +width)
-	     (glVertex3d (* r1 (. Math cos angle))
-			 (* r1 (. Math sin angle))
-			 +width)
-	     (when (< i (+ 1 teeth))
-	       (glVertex3d (* r0 (. Math cos angle))
-			   (* r0 (. Math sin angle))
-			   +width)
-	       (glVertex3d (* r1 (. Math cos (+ angle (* 3.0 da))))
-			   (* r1 (. Math sin (+ angle (* 3.0 da))))
-			   +width)))))
-    
-      ;; draw front sides of teeth
-      (beg-end GL_QUADS
-	(doseq [i (range (+ 1 teeth))]
-	  (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
-	    (glVertex3d (* r1 (. Math cos angle))
-			(* r1 (. Math sin angle))
-			+width)
-	    (glVertex3d (* r2 (. Math cos (+ da angle)))
-			(* r2 (. Math sin (+ angle da)))
-			+width)
-	    (glVertex3d (* r2 (. Math cos (+ angle (* 2.0 da))))
-			(* r2 (. Math sin (+ angle (* 2.0 da))))
-			+width)
-	    (glVertex3d (* r1 (. Math cos (+ angle (* 3.0 da))))
-			(* r1 (. Math sin (+ angle (* 3.0 da))))
-			+width))))    
-
-      ;; draw back face
-      (beg-end GL_QUAD_STRIP
-	(doseq [i (range (+ 1 teeth))]
-	  (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
-	    (glVertex3d (* r1 (. Math cos angle))
-			 (* r1 (. Math sin angle))
-			 -width)
-	    (glVertex3d (* r0 (. Math cos angle))
-			 (* r0 (. Math sin angle))
-			 -width)
-	    (glVertex3d (* r1 (. Math cos (+ angle (* 3.0 da))))
-			 (* r1 (. Math sin (+ angle (* 3.0 da))))
-			 -width)
-	    (glVertex3d (* r0 (. Math cos angle))
-			 (* r0 (. Math sin angle))
-			 -width))))
-
-      ;; draw back sides of teeth
-      (beg-end GL_QUADS
-	(doseq [i (range (+ 1 teeth))]
-	  (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
-	    (glVertex3d (* r1 (. Math cos (+ angle (* 3.0 da))))
-			(* r1 (. Math sin (+ angle (* 3.0 da))))
-			-width)
-	    (glVertex3d (* r2 (. Math cos (+ angle (* 2.0 da))))
-			(* r2 (. Math sin (+ angle (* 2.0 da))))
-			-width)
-	    (glVertex3d (* r2 (. Math cos (+ angle da)))
-			(* r2 (. Math sin (+ angle da)))
-			-width)
-	    (glVertex3d (* r1 (. Math cos angle))
-			(* r1 (. Math sin angle))
-			-width))))
-
-      ;; draw outward faces of teeth
-      (beg-end GL_QUAD_STRIP
-	(doseq [i (range (+ 1 teeth))]
-	  (let [angle (/ (* i 2.0 (. Math PI)) teeth)
-		u-div (- (* r2 (. Math cos (+ angle da)))
-			 (* r1 (. Math cos angle)))
-		v-div (- (* r2 (. Math sin (+ angle da)))
-			 (* r1 (. Math sin angle)))
-		len (. Math sqrt (+ (* u-div u-div) (* v-div v-div)))
-		u1 (/ u-div len)
-		v1 (/ v-div len)
-		u2 (- (* r1 (. Math cos (+ angle (* 3 da))))
-		      (* r2 (. Math cos (+ angle (* 2 da)))))
-		v2 (- (* r1 (. Math sin (+ angle (* 3 da))))
-		      (* r2 (. Math sin (+ angle (* 2 da)))))]
-	    (glVertex3d (* r1 (. Math cos angle))
-			(* r1 (. Math sin angle))
-			+width)
-	    (glVertex3d (* r1 (. Math cos angle))
-			(* r1 (. Math sin angle))
-			-width)
-	    (glNormal3d v1 (- u1) 0)
-	    (glVertex3d (* r2 (. Math cos (+ angle da)))
-			(* r2 (. Math sin (+ angle da)))
-			+width)
-	    (glVertex3d (* r2 (. Math cos (+ angle da)))
-			(* r2 (. Math sin (+ angle da)))
-			-width)
-	    (glNormal3d (. Math cos angle)
-			(. Math sin angle)
-			0.0)	    
-	    (glVertex3d (* r2 (. Math cos (+ angle (* 2 da))))
-			(* r2 (. Math sin (+ angle (* 2 da))))
-			+width)
-	    (glVertex3d (* r2 (. Math cos (+ angle (* 2 da))))
-			(* r2 (. Math sin (+ angle (* 2 da))))
-			-width)
-	    (glNormal3d v2 (- u2) 0.0)
-	    (glVertex3d (* r1 (. Math cos (+ angle (* 3 da))))
-			(* r1 (. Math sin (+ angle (* 3 da))))
-			+width)
-	    (glVertex3d (* r1 (. Math cos (+ angle (* 3 da))))
-			(* r1 (. Math sin (+ angle (* 3 da))))
-			-width)
-	    (glNormal3d (. Math cos angle) (. Math sin angle) 0.0)))
-	(glVertex3d (* r1 (. Math cos 0)) (* r1 (. Math sin 0)) +width)
-	(glVertex3d (* r1 (. Math cos 0)) (* r1 (. Math sin 0)) -width))
-    
-      (glShadeModel GL_SMOOTH)
-    
-      ;; draw inside radius cylinder
-      (beg-end GL_QUAD_STRIP
-	(doseq [i (range (+ 1 teeth))]
-	  (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
-	    (glNormal3d (- (. Math cos angle)) (- (. Math sin angle)) 0.0)
+    ;; draw front face
+    (beg-end GL_QUAD_STRIP
+      (doseq [i (range (+ 1 teeth))]
+	(let [angle (/ (* i 2.0 (. Math PI)) teeth)]
+	  (glVertex3d (* r0 (. Math cos angle))
+		      (* r0 (. Math sin angle))
+		      +width)
+	  (glVertex3d (* r1 (. Math cos angle))
+		      (* r1 (. Math sin angle))
+		      +width)
+	  (when (< i (+ 1 teeth))
 	    (glVertex3d (* r0 (. Math cos angle))
 			(* r0 (. Math sin angle))
-			-width)
-	    (glVertex3d (* r0 (. Math cos angle))
-			(* r0 (. Math sin angle)) +width)))))))
+			+width)
+	    (glVertex3d (* r1 (. Math cos (+ angle (* 3.0 da))))
+			(* r1 (. Math sin (+ angle (* 3.0 da))))
+			+width)))))
+    
+    ;; draw front sides of teeth
+    (beg-end GL_QUADS
+      (doseq [i (range (+ 1 teeth))]
+	(let [angle (/ (* i 2.0 (. Math PI)) teeth)]
+	  (glVertex3d (* r1 (. Math cos angle))
+		      (* r1 (. Math sin angle))
+		      +width)
+	  (glVertex3d (* r2 (. Math cos (+ da angle)))
+		      (* r2 (. Math sin (+ angle da)))
+		      +width)
+	  (glVertex3d (* r2 (. Math cos (+ angle (* 2.0 da))))
+		      (* r2 (. Math sin (+ angle (* 2.0 da))))
+		      +width)
+	  (glVertex3d (* r1 (. Math cos (+ angle (* 3.0 da))))
+		      (* r1 (. Math sin (+ angle (* 3.0 da))))
+		      +width))))    
+
+    ;; draw back face
+    (beg-end GL_QUAD_STRIP
+      (doseq [i (range (+ 1 teeth))]
+	(let [angle (/ (* i 2.0 (. Math PI)) teeth)]
+	  (glVertex3d (* r1 (. Math cos angle))
+		      (* r1 (. Math sin angle))
+		      -width)
+	  (glVertex3d (* r0 (. Math cos angle))
+		      (* r0 (. Math sin angle))
+		      -width)
+	  (glVertex3d (* r1 (. Math cos (+ angle (* 3.0 da))))
+		      (* r1 (. Math sin (+ angle (* 3.0 da))))
+		      -width)
+	  (glVertex3d (* r0 (. Math cos angle))
+		      (* r0 (. Math sin angle))
+		      -width))))
+
+    ;; draw back sides of teeth
+    (beg-end GL_QUADS
+      (doseq [i (range (+ 1 teeth))]
+	(let [angle (/ (* i 2.0 (. Math PI)) teeth)]
+	  (glVertex3d (* r1 (. Math cos (+ angle (* 3.0 da))))
+		      (* r1 (. Math sin (+ angle (* 3.0 da))))
+		      -width)
+	  (glVertex3d (* r2 (. Math cos (+ angle (* 2.0 da))))
+		      (* r2 (. Math sin (+ angle (* 2.0 da))))
+		      -width)
+	  (glVertex3d (* r2 (. Math cos (+ angle da)))
+		      (* r2 (. Math sin (+ angle da)))
+		      -width)
+	  (glVertex3d (* r1 (. Math cos angle))
+		      (* r1 (. Math sin angle))
+		      -width))))
+
+    ;; draw outward faces of teeth
+    (beg-end GL_QUAD_STRIP
+      (doseq [i (range (+ 1 teeth))]
+	(let [angle (/ (* i 2.0 (. Math PI)) teeth)
+	      u-div (- (* r2 (. Math cos (+ angle da)))
+		       (* r1 (. Math cos angle)))
+	      v-div (- (* r2 (. Math sin (+ angle da)))
+		       (* r1 (. Math sin angle)))
+	      len (. Math sqrt (+ (* u-div u-div) (* v-div v-div)))
+	      u1 (/ u-div len)
+	      v1 (/ v-div len)
+	      u2 (- (* r1 (. Math cos (+ angle (* 3 da))))
+		    (* r2 (. Math cos (+ angle (* 2 da)))))
+	      v2 (- (* r1 (. Math sin (+ angle (* 3 da))))
+		    (* r2 (. Math sin (+ angle (* 2 da)))))]
+	  (glVertex3d (* r1 (. Math cos angle))
+		      (* r1 (. Math sin angle))
+		      +width)
+	  (glVertex3d (* r1 (. Math cos angle))
+		      (* r1 (. Math sin angle))
+		      -width)
+	  (glNormal3d v1 (- u1) 0)
+	  (glVertex3d (* r2 (. Math cos (+ angle da)))
+		      (* r2 (. Math sin (+ angle da)))
+		      +width)
+	  (glVertex3d (* r2 (. Math cos (+ angle da)))
+		      (* r2 (. Math sin (+ angle da)))
+		      -width)
+	  (glNormal3d (. Math cos angle)
+		      (. Math sin angle)
+		      0.0)	    
+	  (glVertex3d (* r2 (. Math cos (+ angle (* 2 da))))
+		      (* r2 (. Math sin (+ angle (* 2 da))))
+		      +width)
+	  (glVertex3d (* r2 (. Math cos (+ angle (* 2 da))))
+		      (* r2 (. Math sin (+ angle (* 2 da))))
+		      -width)
+	  (glNormal3d v2 (- u2) 0.0)
+	  (glVertex3d (* r1 (. Math cos (+ angle (* 3 da))))
+		      (* r1 (. Math sin (+ angle (* 3 da))))
+		      +width)
+	  (glVertex3d (* r1 (. Math cos (+ angle (* 3 da))))
+		      (* r1 (. Math sin (+ angle (* 3 da))))
+		      -width)
+	  (glNormal3d (. Math cos angle) (. Math sin angle) 0.0)))
+      (glVertex3d (* r1 (. Math cos 0)) (* r1 (. Math sin 0)) +width)
+      (glVertex3d (* r1 (. Math cos 0)) (* r1 (. Math sin 0)) -width))
+    
+    (glShadeModel GL_SMOOTH)
+    
+    ;; draw inside radius cylinder
+    (beg-end GL_QUAD_STRIP
+      (doseq [i (range (+ 1 teeth))]
+	(let [angle (/ (* i 2.0 (. Math PI)) teeth)]
+	  (glNormal3d (- (. Math cos angle)) (- (. Math sin angle)) 0.0)
+	  (glVertex3d (* r0 (. Math cos angle))
+		      (* r0 (. Math sin angle))
+		      -width)
+	  (glVertex3d (* r0 (. Math cos angle))
+		      (* r0 (. Math sin angle)) +width))))))
   
 (defn go []
   (let [frame (new Frame)
@@ -239,19 +238,19 @@
 		      (dosync (ref-set gear1 (glGenLists 1)))
 		      (glNewList @gear1 GL_COMPILE)
 		      (glMaterialfv GL_FRONT GL_AMBIENT_AND_DIFFUSE red 0)
-		      (gear gl 1.0 4.0 1.0 20 0.7)
+		      (gear 1.0 4.0 1.0 20 0.7)
 		      (glEndList)
 		    
 		      (dosync (ref-set gear2 (glGenLists 1)))
 		      (glNewList @gear2 GL_COMPILE)
 		      (glMaterialfv GL_FRONT GL_AMBIENT_AND_DIFFUSE green 0)
-		      (gear gl 0.5 2.0 2.0 10 0.7)
+		      (gear 0.5 2.0 2.0 10 0.7)
 		      (glEndList)
 		    
 		      (dosync (ref-set gear3 (glGenLists 1)))
 		      (glNewList @gear3 GL_COMPILE)
 		      (glMaterialfv GL_FRONT GL_AMBIENT_AND_DIFFUSE blue 0)
-		      (gear gl 1.3 2.0 0.5 10 0.7)
+		      (gear 1.3 2.0 0.5 10 0.7)
 		      (glEndList)
 		    
 		      (glEnable GL_NORMALIZE))))

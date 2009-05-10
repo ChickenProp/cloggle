@@ -44,11 +44,12 @@ expecting a Double, but not the other way around. You can't pass a Ratio to
 anything.
 
 When multiple methods sharing a name are provided by JOGL, only one of these can
-be accessed from cloggle. It will be whichever one shows up last in the array
-returned by (.getDeclaredMethods javax.media.opengl.GL). I assume (but have done
-no research to check) that's consistent between environments, so it's probably
-safe to use as long as you know which method you're getting. At least one of
-these functions, glLightfv, is used by the example gears program.
+be accessed from cloggle. This seems to be the case for functions which expect a
+pointer in C: JOGL provides one version of the function which accepts an array,
+and one which accepts a java.nio.*Buffer. It is not yet safe to use these
+functions as exposed by cloggle; use (.glFunc opengl-context args...) for now.
+For an example, see the usage of glLightfv and glMaterialfv in gears.clj. All
+other exposed functions should be safe to use.
 
 FUTURE PLANS
 

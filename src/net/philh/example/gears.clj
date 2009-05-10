@@ -229,7 +229,7 @@
 				      (. drawable getChosenGLCapabilities))))
 		    (ctx gl
 		      (setSwapInterval 1)
-		      (glLightfv GL_LIGHT0 GL_POSITION pos 0)
+		      (.glLightfv opengl-context GL_LIGHT0 GL_POSITION pos 0)
 		      (glEnable GL_CULL_FACE)
 		      (glEnable GL_LIGHTING)
 		      (glEnable GL_LIGHT0)
@@ -237,19 +237,22 @@
 		    
 		      (dosync (ref-set gear1 (glGenLists 1)))
 		      (glNewList @gear1 GL_COMPILE)
-		      (glMaterialfv GL_FRONT GL_AMBIENT_AND_DIFFUSE red 0)
+		      (.glMaterialfv opengl-context
+				     GL_FRONT GL_AMBIENT_AND_DIFFUSE red 0)
 		      (gear 1.0 4.0 1.0 20 0.7)
 		      (glEndList)
 		    
 		      (dosync (ref-set gear2 (glGenLists 1)))
 		      (glNewList @gear2 GL_COMPILE)
-		      (glMaterialfv GL_FRONT GL_AMBIENT_AND_DIFFUSE green 0)
+		      (.glMaterialfv opengl-context
+				     GL_FRONT GL_AMBIENT_AND_DIFFUSE green 0)
 		      (gear 0.5 2.0 2.0 10 0.7)
 		      (glEndList)
 		    
 		      (dosync (ref-set gear3 (glGenLists 1)))
 		      (glNewList @gear3 GL_COMPILE)
-		      (glMaterialfv GL_FRONT GL_AMBIENT_AND_DIFFUSE blue 0)
+		      (.glMaterialfv opengl-context
+				     GL_FRONT GL_AMBIENT_AND_DIFFUSE blue 0)
 		      (gear 1.3 2.0 0.5 10 0.7)
 		      (glEndList)
 		    

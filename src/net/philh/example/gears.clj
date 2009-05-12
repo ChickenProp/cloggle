@@ -5,6 +5,8 @@
 	'(com.sun.opengl.util Animator))
 (use 'net.philh.cloggle)
 
+(set! *warn-on-reflection* true)
+
 (defn nanotime []
   (double (/ (. java.lang.System nanoTime) 1000000000)))
 
@@ -186,7 +188,8 @@
 				       (/ @frames longdtime) "FPS")
 			      (ref-set longtime curtime)
 			      (ref-set frames 0)))
-			(ref-set angle (+ (* 0.05 deltime) @angle))))
+			(ref-set angle (+ (* 50 deltime) @angle))
+			(ref-set lasttime curtime)))
 		     (ctx (. drawable getGL)
 			  (glClear GL_DEPTH_BUFFER_BIT)
 			  (glClear GL_COLOR_BUFFER_BIT)

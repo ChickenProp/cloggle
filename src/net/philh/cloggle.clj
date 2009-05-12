@@ -24,9 +24,10 @@
 
 (def gl-methods (seq (.getDeclaredMethods GL)))
 (def gl-fields
-     (map #(hash-map :name (.getName %)
-		     :type (.getType %)
-		     :value  (.get % GL))
+     (map (fn [#^java.lang.reflect.Field m]
+	    (hash-map :name  (.getName m)
+		      :type  (.getType m)
+		      :value (.get m GL)))
 	  (seq (.getDeclaredFields GL))))
 
 (defn def-ev
@@ -39,7 +40,7 @@ metadata."
 
 (defn defn-from-method
   "Takes an instance method of GL and makes a function on opengl-context of it."
-  [meth]
+  [#^java.lang.reflect.Method meth]
     (def-ev (symbol (.getName meth))
       (fn [& args]
 	(.invoke meth opengl-context (to-array args)))))

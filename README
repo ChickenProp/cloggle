@@ -38,22 +38,12 @@ Illustrative example (not working code):
 
 BUGS
 
-The only typecasting is that provided by the JVM (I think). So you can pass an
-Integer to a function expecting a Float or a Double, and a Float to a function
-expecting a Double, but not the other way around. You can't pass a Ratio to
-anything.
-
-When multiple methods sharing a name are provided by JOGL, only one of these can
-be accessed from cloggle. This seems to be the case for functions which expect a
-pointer in C: JOGL provides one version of the function which accepts an array,
-and one which accepts a java.nio.*Buffer. It is not yet safe to use these
-functions as exposed by cloggle; use (.glFunc opengl-context args...) for now.
-For an example, see the usage of glLightfv and glMaterialfv in gears.clj. All
-other exposed functions should be safe to use.
+No typecasting is performed. If a function expects a Double, you can't pass it an
+Integer, Float, Ratio, or anything else that isn't a Double.
 
 FUTURE PLANS
 
-* Fix those bugs.
+* Fix that bugs, and any others I don't yet know about.
 * Rename functions and fields: glMatrixMode -> matrix-mode, GL_DEPTH_BUFFER_BIT
   -> depth-buffer-bit.
 * When the 'same' function goes by multiple names (eg. glVertex -> glVertex2f,

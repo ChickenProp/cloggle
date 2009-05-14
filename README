@@ -32,18 +32,20 @@ Illustrative example (not working code):
       (glClear GL_DEPTH_BUFFER_BIT)
       (glClear GL_COLOR_BUFFER_BIT)
       (beg-end GL_TRIANGLES
-        (glVertex3d 30 0 0)
-        (glVertex3d 0 30 0)
-        (glVertex3d 0 0 0)))
+        (glVertex3i 30 0 0)
+        (glVertex3i 0 30 0)
+        (glVertex3i 0 0 0)))
 
 BUGS
 
 No typecasting is performed. If a function expects a Double, you can't pass it an
 Integer, Float, Ratio, or anything else that isn't a Double.
 
+There has been very little testing, so it's likely that others exist.
+
 FUTURE PLANS
 
-* Fix that bugs, and any others I don't yet know about.
+* Fix bugs.
 * Rename functions and fields: glMatrixMode -> matrix-mode, GL_DEPTH_BUFFER_BIT
   -> depth-buffer-bit.
 * When the 'same' function goes by multiple names (eg. glVertex -> glVertex2f,

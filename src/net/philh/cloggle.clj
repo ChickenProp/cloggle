@@ -1,5 +1,6 @@
 (ns net.philh.cloggle
-  (:import [javax.media.opengl GL]))
+  (:import [javax.media.opengl GL])
+  (:import [java.lang.reflect Field Method]))
 
 ;; Uncomment this, and the later (comment), to time how long cloggle takes to
 ;; initialise.
@@ -22,22 +23,22 @@
        ~@forms
        (glEnd)))
 
-(let [#^Class gl GL]
+  (defn def-ev
+    "Like def, but evaluates its first argument. And (currently) doesn't add
+metadata."
+    ([#^Symbol name]
+       (intern *ns* name))
+    ([#^Symbol name val]
+       (intern *ns* name val)))
+
+(let [#^Class gl GL] ; this is the only way I know to avoid reflection on it.
   (def gl-methods (seq (.getDeclaredMethods gl)))
   (def gl-fields
-       (map (fn [#^java.lang.reflect.Field m]
+       (map (fn [#^Field m]
 	      (hash-map :name  (.getName m)
 			:type  (.getType m)
 			:value (.get m gl)))
 	    (seq (.getDeclaredFields gl)))))
-
-(defn def-ev
-  "Like def, but evaluates its first argument. And (currently) doesn't add
-metadata."
-  ([#^Symbol name]
-     (intern *ns* name))
-  ([#^Symbol name val]
-     (intern *ns* name val)))
 
 ;; getParameterTypes returns primitive types (int, float, etc.) and array types
 ;; ([I, [F, etc.) when possible.
@@ -45,30 +46,34 @@ metadata."
 ;; primitive types without reflecting on a method which takes or returns them.
 (let [[iat fat dat] (map #(class (% 1 0)) [int-array float-array double-array])
       [ipt fpt dpt] (map (fn [mname]
-			   (let [meth (first (filter #(= (.getName %) mname)
-						     (.getDeclaredMethods GL)))]
+			   (let [#^Method meth
+				   (first (filter (fn [#^Method m]
+						    (= (.getName m) mname))
+						  gl-methods))]
 			     (aget (.getParameterTypes meth) 0)))
 			 ["glVertex2i" "glVertex2f" "glVertex2d"])
-      tmap {ipt :int  fpt :float  dpt :double
-	    iat :ints fat :floats dat :doubles
-	    Integer :int Float :float Double :double}]
+      tmap {ipt ::int  fpt ::float  dpt ::double
+	    iat ::ints fat ::floats dat ::doubles
+	    Integer ::int Float ::float Double ::double}]
   (defn ptypes->ktypes [ptypes]
     (vec (map #(or (tmap %) %) (seq ptypes))))
   (defn vals->ktypes [& vals]
     (vec (map #(or (tmap (class %)) (class %)) vals))))
 
+(derive ::int ::float)
+(derive ::float ::double)
 (defn defn-from-method
   "Takes an instance method of GL and makes a function on opengl-context of it."
-  [#^java.lang.reflect.Method meth]
-    (let [name (.getName meth)
-	  multi
-	    (var-get (or (ns-resolve *ns* (symbol name))
-			 (def-ev (symbol name)
-			   (new clojure.lang.MultiFn name vals->ktypes
-				:default #'clojure.core/global-hierarchy))))
-	  params (.getParameterTypes meth)]
-      (defmethod multi (ptypes->ktypes params) [& args]
-	(.invoke meth opengl-context (to-array args)))))
+  [#^Method meth]
+  (let [name (.getName meth)
+	#^clojure.lang.MultiFn multi
+	(var-get (or (ns-resolve *ns* (symbol name))
+		     (def-ev (symbol name)
+		       (new clojure.lang.MultiFn name vals->ktypes
+			    :default #'clojure.core/global-hierarchy))))
+	params (.getParameterTypes meth)]
+    (defmethod multi (ptypes->ktypes params) [& args]
+      (.invoke meth opengl-context (to-array args)))))
 
 (doseq [i gl-fields]
   (def-ev (symbol (i :name)) (i :value)))

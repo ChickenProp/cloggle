@@ -1,9 +1,7 @@
 OVERVIEW
 
-cloggle provides a Clojure interface to OpenGL through JOGL. It is currently
-very thin. Almost all opengl functions should be supported, but due to
-implementation details, there are some which may not work yet (see bug #2). At
-the moment only the GL interface is implemented; there is no support for
+cloggle provides a Clojure interface to OpenGL through JOGL. Currently it is
+very thin, and only the GL interface is implemented; there is no support for
 GLAutoDrawable or the like.
 
 A GL object can be interfaced with using the ctx macro, which initialises a
@@ -32,14 +30,16 @@ Illustrative example (not working code):
       (glClear GL_DEPTH_BUFFER_BIT)
       (glClear GL_COLOR_BUFFER_BIT)
       (beg-end GL_TRIANGLES
-        (glVertex3i 30 0 0)
-        (glVertex3i 0 30 0)
-        (glVertex3i 0 0 0)))
+        (glVertex3d 30 0 0)
+        (glVertex3d 0 30 0)
+        (glVertex3d 0 0 0)))
 
 BUGS
 
-No typecasting is performed. If a function expects a Double, you can't pass it an
-Integer, Float, Ratio, or anything else that isn't a Double.
+Only basic typecasting is performed. If a function expects a double, it also
+accepts an int or a float; if it expects a float, it also accepts an int. That's
+it. In particular, arrays have to be of the correct type and cannot be seqs or
+collections.
 
 There has been very little testing, so it's likely that others exist.
 
@@ -51,4 +51,5 @@ FUTURE PLANS
 * When the 'same' function goes by multiple names (eg. glVertex -> glVertex2f,
   glVertex2d, glVertex3f, etc.), make it available under a catch-all (eg.
   glVertex, or simply vertex if the rename has already happened).
-* Add support for GLAutoDrawable, GLEventListener and friends.
+* Add support for related interfaces, like GLAutoDrawable, GLEventListener and
+  GLU.

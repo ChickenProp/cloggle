@@ -44,7 +44,10 @@ metadata."
 ;; ([I, [F, etc.) when possible.
 ;; The array types are easy to get, but I don't know of any way to get the
 ;; primitive types without reflecting on a method which takes or returns them.
+
+      ;types of arrays of primitives
 (let [[iat fat dat] (map #(class (% 1 0)) [int-array float-array double-array])
+      ;types of primitives
       [ipt fpt dpt] (map (fn [mname]
 			   (let [#^Method meth
 				   (first (filter (fn [#^Method m]
@@ -52,12 +55,19 @@ metadata."
 						  gl-methods))]
 			     (aget (.getParameterTypes meth) 0)))
 			 ["glVertex2i" "glVertex2f" "glVertex2d"])
-      tmap {ipt ::int  fpt ::float  dpt ::double
-	    iat ::ints fat ::floats dat ::doubles
-	    Integer ::int Float ::float Double ::double}]
-  (defn ptypes->ktypes [ptypes]
+      ;map them to keyword types
+      tmap {ipt     ::int  fpt   ::float  dpt    ::double
+	    Integer ::int  Float ::float  Double ::double
+	    iat     ::ints fat   ::floats dat    ::doubles}]
+
+  (defn ptypes->ktypes
+    "Takes a seq of primitive types, returns a vector of their keyword types."
+    [ptypes]
     (vec (map #(or (tmap %) %) (seq ptypes))))
-  (defn vals->ktypes [& vals]
+
+  (defn vals->ktypes
+    "Takes multiple values, and returns a vector of their keyword types."
+    [& vals]
     (vec (map #(or (tmap (class %)) (class %)) vals))))
 
 (derive ::int ::float)

@@ -34,14 +34,28 @@ Illustrative example (not working code):
         (glVertex3d 0 30 0)
         (glVertex3d 0 0 0)))
 
+TYPECASTING
+
+Any number type can be substituted for any other; it will be cast before passing
+it to the method. Similarly, any array type can be substituted for any other,
+and so can vectors and lists.
+
+These calls will all have the same effect:
+
+    (glVertex2i 5 10)
+    (glVertex2iv (int-array [5 10] 0))
+    (glVertex2f 5.5 10.7)
+    (glVertex2iv (float-array [5.5 10.7] 0))
+    (glVertex2iv [5 10] 0)
+    (glVertex2iv '(5.5 10.7) 0)
+
+(Note that JOGL functions expecting an array typically also take an offset
+argument for the first element to use, so another equivalent call would be
+(glVertex2iv [3 5 10] 1).
+
 BUGS
 
-Only basic typecasting is performed. If a function expects a double, it also
-accepts an int or a float; if it expects a float, it also accepts an int. That's
-it. In particular, arrays have to be of the correct type and cannot be seqs or
-collections.
-
-There has been very little testing, so it's likely that others exist.
+Currently unknown.
 
 FUTURE PLANS
 

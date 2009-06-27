@@ -56,34 +56,77 @@ metadata."
 			     (aget (.getParameterTypes meth) 0)))
 			 ["glVertex2i" "glVertex2f" "glVertex2d"])
       ;map them to keyword types
-      tmap {ipt     ::int  fpt   ::float  dpt    ::double
-	    Integer ::int  Float ::float  Double ::double
-	    iat     ::ints fat   ::floats dat    ::doubles}]
+      tmap {ipt     ::int,  fpt   ::float,  dpt    ::double,
+	    Integer ::int,  Float ::float,  Double ::double,
+	    iat     ::ints, fat   ::floats, dat    ::doubles}
+      ;map keyword types to their weaker variants
+      wmap {::int  ::num,  ::float  ::num,  ::double  ::num,
+	    ::ints ::nums, ::floats ::nums, ::doubles ::nums}
+      ;map keyword types to functions coercing to them
+      fmap {::int int, ::float float, ::double double,
+	    ::ints int-array, ::floats float-array, ::doubles double-array}]
 
   (defn ptypes->ktypes
     "Takes a seq of primitive types, returns a vector of their keyword types."
     [ptypes]
-    (vec (map #(or (tmap %) %) (seq ptypes))))
+    (vec (map #(or (tmap %) %) ptypes)))
+  (defn weaken-ktypes
+    "Takes a seq of keyword types, returns a vector of their weak forms."
+    [ktypes]
+    (vec (map #(or (wmap %) %) ktypes)))
 
   (defn vals->ktypes
     "Takes multiple values, and returns a vector of their keyword types."
     [& vals]
-    (vec (map #(or (tmap (class %)) (class %)) vals))))
+    (vec (map #(or (tmap (class %)) (class %)) vals)))
+
+  (defn ktype-coerce
+    "Coerces a value to a keyword type."
+    [ktype val]
+    ((get fmap ktype identity) val)))
 
 (derive ::int ::float)
 (derive ::float ::double)
+(derive ::double ::num)
+
+;; These can't be coerced upwards natively, so we have to send them all directly
+;; to ::nums.
+(derive ::ints ::nums)
+(derive ::floats ::nums)
+(derive ::doubles ::nums)
+(derive clojure.lang.PersistentVector ::nums)
+(derive clojure.lang.LazilyPersistentVector ::nums)
+(derive clojure.lang.PersistentList ::nums)
+
 (defn defn-from-method
-  "Takes an instance method of GL and makes a function on opengl-context of it."
+  "Takes an instance method of GL and makes two multifunctions on opengl-context
+of it.
+
+One dispatches on exactly the argument types of the original, so [int int]
+becomes [::int ::int], and is called with Integer arguments. They are passed
+directly to the method.
+
+The other dispatches on weaker forms of the argument types, so [int int] becomes
+ [::num ::num], and can be called with numeric arguments of any sort. They will
+be coerced to ints before the method is invoked on them."
   [#^Method meth]
   (let [name (.getName meth)
+
 	#^clojure.lang.MultiFn multi
 	(var-get (or (ns-resolve *ns* (symbol name))
 		     (def-ev (symbol name)
 		       (new clojure.lang.MultiFn name vals->ktypes
 			    :default #'clojure.core/global-hierarchy))))
-	params (.getParameterTypes meth)]
-    (defmethod multi (ptypes->ktypes params) [& args]
-      (.invoke meth opengl-context (to-array args)))))
+
+	params (.getParameterTypes meth)
+	ktypes (ptypes->ktypes params)
+	ktypes-weak (weaken-ktypes ktypes)]
+    (defmethod multi ktypes [& args]
+      (.invoke meth opengl-context (to-array args)))
+    (if (not (= ktypes ktypes-weak))
+      (defmethod multi ktypes-weak [& args]
+	(.invoke meth opengl-context
+		 (to-array (map ktype-coerce ktypes args)))))))
 
 (doseq [i gl-fields]
   (def-ev (symbol (i :name)) (i :value)))
@@ -95,3 +138,4 @@ metadata."
   (println "cloggle took"
 	   (double (/ (- (. java.lang.System nanoTime) t1) 1000000))
 	   "msecs to load."))
+

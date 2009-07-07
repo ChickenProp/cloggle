@@ -5,11 +5,9 @@
 	   [javax.imageio ImageIO]
 	   [java.io File]))
 
-;; Uncomment this, and the later (comment), to time how long cloggle takes to
-;; initialise.
-(comment
-  (println "cloggle loading")
-  (def t1 (. java.lang.System nanoTime)))
+(def *cloggle-time-load* (ref false))
+;; Uncomment this to time how long cloggle takes to initialise.
+;; (dosync (ref-set *cloggle-time-load* (. java.lang.System nanoTime)))
 
 (def #^GL opengl-context nil)
 
@@ -44,8 +42,8 @@ metadata."
 	    (seq (.getDeclaredFields gl)))))
 
 ;; getParameterTypes returns primitive types (int, float, etc.) and array types
-;; ([I, [F, etc.) when possible. Converting them to keywords means they don't
-;; really have to be dealt with.
+;; ([I, [F, etc.) when possible. We also want to accept object types (Integer,
+;; Float) and clojure collections. So use keyword types to represent them.
       ;;types of arrays of primitives
 (let [[iat fat dat] (map #(class (% 1 0)) [int-array float-array double-array])
 
@@ -166,9 +164,9 @@ upside-down as well."
 
     tex))
 
-;; This is the "later (comment)" referred to above.
-(comment
+(if @*cloggle-time-load*
   (println "cloggle took"
-	   (double (/ (- (. java.lang.System nanoTime) t1) 1000000))
+	   (double (/ (- (. java.lang.System nanoTime) @*cloggle-time-load*)
+		      1000000))
 	   "msecs to load."))
 

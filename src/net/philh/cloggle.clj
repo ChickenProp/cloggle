@@ -1,6 +1,9 @@
 (ns net.philh.cloggle
-  (:import [javax.media.opengl GL])
-  (:import [java.lang.reflect Field Method]))
+  (:import [javax.media.opengl GL]
+	   [java.lang.reflect Field Method]
+	   [java.awt.image BufferedImage]
+	   [javax.imageio ImageIO]
+	   [java.io File]))
 
 ;; Uncomment this, and the later (comment), to time how long cloggle takes to
 ;; initialise.
@@ -132,6 +135,38 @@ be coerced to ints before the method is invoked on them."
   (def-ev (symbol (i :name)) (i :value)))
 (doseq [i gl-methods]
   (defn-from-method i))
+
+;; I assume all BufferedImages are byte-based, which I'm sure isn't true.
+;; But I'm not sure what's the best way to handle images that might be based on
+;; some other type, so stick with this until it breaks.
+(defn bi-get-pixels
+  "Returns a byte array of the pixel data in a BufferedImage."
+  [#^BufferedImage bi]
+  (let [buffer (.. bi (getRaster) (getDataBuffer))]
+    (.getData #^java.awt.image.DataBufferByte buffer)))
+
+(defn texture-from-file
+  "Given the file name of an image, returns an opengl texture representing it.
+
+The texture will appear to be upside-down due to opengl and image formats having
+different ideas about the location of (0,0). Simply place texture coordinates
+upside-down as well."
+  [#^String file] 
+  (let [texa (int-array 1)
+	tex (do (glGenTextures 1 texa 0)
+		(nth (seq texa) 0))
+	im (. ImageIO read (File. file))
+	data (bi-get-pixels im)]
+
+    (glBindTexture GL_TEXTURE_2D tex)
+    (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+    (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
+    (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP)
+    (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP)
+    (glTexImage2D GL_TEXTURE_2D 0 GL_RGBA (.getWidth im) (.getHeight im) 0
+		  GL_RGBA GL_UNSIGNED_BYTE (. java.nio.ByteBuffer wrap data))
+
+    tex))
 
 ;; This is the "later (comment)" referred to above.
 (comment

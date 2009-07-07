@@ -53,6 +53,18 @@ These calls will all have the same effect:
 argument for the first element to use, so another equivalent call would be
 (glVertex2iv [3 5 10] 1).
 
+EXPORTS
+
+The following symbols are provided, in addition to the standard gl* functions
+and GL_* variables:
+
+(beg-end mode body...)
+Macro. Wraps body in calls to (glBegin mode) and (glEnd).
+
+(texture-from-file file)
+Function. Loads an image from file and returns a 2d RGBA texture representing
+it.
+
 BUGS
 
 Currently unknown.

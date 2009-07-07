@@ -44,28 +44,26 @@ metadata."
 	    (seq (.getDeclaredFields gl)))))
 
 ;; getParameterTypes returns primitive types (int, float, etc.) and array types
-;; ([I, [F, etc.) when possible.
-;; The array types are easy to get, but I don't know of any way to get the
-;; primitive types without reflecting on a method which takes or returns them.
-
-      ;types of arrays of primitives
+;; ([I, [F, etc.) when possible. Converting them to keywords means they don't
+;; really have to be dealt with.
+      ;;types of arrays of primitives
 (let [[iat fat dat] (map #(class (% 1 0)) [int-array float-array double-array])
-      ;types of primitives
-      [ipt fpt dpt] (map (fn [mname]
-			   (let [#^Method meth
-				   (first (filter (fn [#^Method m]
-						    (= (.getName m) mname))
-						  gl-methods))]
-			     (aget (.getParameterTypes meth) 0)))
-			 ["glVertex2i" "glVertex2f" "glVertex2d"])
-      ;map them to keyword types
+
+      ;;types of primitives (we can't map because (. % TYPE) doesn't work.)
+      ipt (. Integer TYPE)
+      fpt (. Float TYPE)
+      dpt (. Double TYPE)
+
+      ;;map them to keyword types
       tmap {ipt     ::int,  fpt   ::float,  dpt    ::double,
 	    Integer ::int,  Float ::float,  Double ::double,
 	    iat     ::ints, fat   ::floats, dat    ::doubles}
-      ;map keyword types to their weaker variants
+
+      ;;map keyword types to their weaker variants
       wmap {::int  ::num,  ::float  ::num,  ::double  ::num,
 	    ::ints ::nums, ::floats ::nums, ::doubles ::nums}
-      ;map keyword types to functions coercing to them
+
+      ;;map keyword types to functions coercing to them
       fmap {::int int, ::float float, ::double double,
 	    ::ints int-array, ::floats float-array, ::doubles double-array}]
 

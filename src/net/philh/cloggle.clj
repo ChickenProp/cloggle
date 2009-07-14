@@ -93,9 +93,7 @@ metadata."
 (derive ::ints ::nums)
 (derive ::floats ::nums)
 (derive ::doubles ::nums)
-(derive clojure.lang.PersistentVector ::nums)
-(derive clojure.lang.LazilyPersistentVector ::nums)
-(derive clojure.lang.PersistentList ::nums)
+(derive clojure.lang.Seqable ::nums)
 
 (defn defn-from-method
   "Takes an instance method of GL and makes two multifunctions on opengl-context

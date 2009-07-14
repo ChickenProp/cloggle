@@ -48,9 +48,9 @@ metadata."
 (let [[iat fat dat] (map #(class (% 1 0)) [int-array float-array double-array])
 
       ;;types of primitives (we can't map because (. % TYPE) doesn't work.)
-      ipt (. Integer TYPE)
-      fpt (. Float TYPE)
-      dpt (. Double TYPE)
+      ipt Integer/TYPE
+      fpt Float/TYPE
+      dpt Double/TYPE
 
       ;;map them to keyword types
       tmap {ipt     ::int,  fpt   ::float,  dpt    ::double,

@@ -130,6 +130,14 @@ be coerced to ints before the method is invoked on them."
 (doseq [i gl-methods]
   (defn-from-method i))
 
+(defn vertex
+  "Given 2-4 numerical arguments, sends them to glVertexNd. Given a single
+seq argument, applies it to vertex."
+  ([s]       (apply vertex s))
+  ([x y]     (glVertex2d x y))
+  ([x y z]   (glVertex3d x y z))
+  ([x y z w] (glVertex4d x y z w)))
+
 ;; I assume all BufferedImages are byte-based, which I'm sure isn't true.
 ;; But I'm not sure what's the best way to handle images that might be based on
 ;; some other type, so stick with this until it breaks.

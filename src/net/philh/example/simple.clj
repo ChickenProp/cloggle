@@ -20,9 +20,9 @@
 		    (glClear GL_DEPTH_BUFFER_BIT)
 		    (glColor3d 1 0.5 1)
 		    (beg-end GL_TRIANGLES
-		      (glVertex2d 0 0)
-		      (glVertex2dv [1 0.5] 0)
-		      (glVertex2d 0 1))))))
+		      (vertex 0 0)
+		      (vertex [1 0.5]) ; make sure vector arguments work.
+		      (vertex 0 1))))))
     (.setSize canvas 100 100)
     (.add frame canvas)
     (.addWindowListener frame

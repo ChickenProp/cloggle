@@ -65,6 +65,10 @@ Macro. Wraps body in calls to (glBegin mode) and (glEnd).
 Function. Loads an image from file and returns a 2d RGBA texture representing
 it.
 
+(vertex points...)
+Function. If passed 2-4 arguments, they are sent to glVertexNd. If passed a
+single argument, it is assumed to be a seq and is (apply)ed to vertex.
+
 BUGS
 
 Currently unknown.
@@ -74,8 +78,7 @@ FUTURE PLANS
 * Fix bugs.
 * Rename functions and fields: glMatrixMode -> matrix-mode, GL_DEPTH_BUFFER_BIT
   -> depth-buffer-bit.
-* When the 'same' function goes by multiple names (eg. glVertex -> glVertex2f,
-  glVertex2d, glVertex3f, etc.), make it available under a catch-all (eg.
-  glVertex, or simply vertex if the rename has already happened).
+* When the 'same' function goes by multiple names, make it available under a
+  catch-all (like with vertex, but for more of them).
 * Add support for related interfaces, like GLAutoDrawable, GLEventListener and
   GLU.

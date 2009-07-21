@@ -52,10 +52,11 @@ metadata."
       fpt Float/TYPE
       dpt Double/TYPE
 
-      ;;map them to keyword types
+      ;;map normal types to keyword types
       tmap {ipt     ::int,  fpt   ::float,  dpt    ::double,
 	    Integer ::int,  Float ::float,  Double ::double,
-	    iat     ::ints, fat   ::floats, dat    ::doubles}
+	    iat     ::ints, fat   ::floats, dat    ::doubles,
+	    clojure.lang.Ratio ::num}
 
       ;;map keyword types to their weaker variants
       wmap {::int  ::num,  ::float  ::num,  ::double  ::num,

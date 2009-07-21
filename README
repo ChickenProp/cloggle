@@ -36,15 +36,22 @@ Illustrative example (not working code):
 
 TYPECASTING
 
-Any number type can be substituted for any other; it will be cast before passing
-it to the method. Similarly, any array type can be substituted for any other,
-and so can vectors and lists.
+int, float, ratio and double types are handled intelligently: functions which
+expect one can take any of the others. (ratio is native to clojure, so no
+functions expect that, but it can still be passed.) short and byte are not
+handled; there seems little point, and clojure doesn't supply short-array or
+byte-array functions. You can still call those functions if you like, but you
+must specifically pass shorts or bytes to them.
+
+Likewise, functions which expect an array of ints, floats or doubles can accept
+an array of any type, or any Seqable clojure type. (Provided in both cases that
+all the elements can be cast appropriately; Maps, for instance, don't work.)
 
 These calls will all have the same effect:
 
-    (glVertex2i 5 10)
+    (glVertex2i  5 10)
     (glVertex2iv (int-array [5 10] 0))
-    (glVertex2f 5.5 10.7)
+    (glVertex2i  5.5 10.7)
     (glVertex2iv (float-array [5.5 10.7] 0))
     (glVertex2iv [5 10] 0)
     (glVertex2iv '(5.5 10.7) 0)

@@ -66,8 +66,11 @@ Function. Loads an image from file and returns a 2d RGBA texture representing
 it.
 
 (vertex points...)
-Function. If passed 2-4 arguments, they are sent to glVertexNd. If passed a
-single argument, it is assumed to be a seq and is (apply)ed to vertex.
+(color values...)
+Functions. Call the appropriate glFunction according to the provided arguments.
+Accept sequences as well as individual arguments, so (vertex [1 2]) and
+(vertex 1 2) are equivalent. vertex takes 2-4 arguments/seq indices, and color
+takes 3-4.
 
 BUGS
 
@@ -82,3 +85,6 @@ FUTURE PLANS
   catch-all (like with vertex, but for more of them).
 * Add support for related interfaces, like GLAutoDrawable, GLEventListener and
   GLU.
+* Should vertex only accept up to 3 arguments? I don't know if there's any
+  reason to ever call glVertex4*, and it might screw things up if someone had
+  a longer sequence than they expected.

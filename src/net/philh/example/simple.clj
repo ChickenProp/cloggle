@@ -18,7 +18,7 @@
 		  (ctx (.getGL drawable)
 		    (glClear GL_COLOR_BUFFER_BIT)
 		    (glClear GL_DEPTH_BUFFER_BIT)
-		    (glColor3d 1 0.5 1)
+		    (color 1 0.5 1)
 		    (beg-end GL_TRIANGLES
 		      (vertex 0 0)
 		      (vertex [1 0.5]) ; make sure vector arguments work.

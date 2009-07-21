@@ -138,6 +138,13 @@ seq argument, applies it to vertex."
   ([x y z]   (glVertex3d x y z))
   ([x y z w] (glVertex4d x y z w)))
 
+(defn color
+  "Given 3 or 4 numerical arguments which should be in the range [0,1], sets the
+current color. Given a single seq argument, sets the color from its contents."
+  ([s] (apply color s))
+  ([r g b] (glColor3d r g b))
+  ([r g b a] (glColor4d r g b a)))
+
 ;; I assume all BufferedImages are byte-based, which I'm sure isn't true.
 ;; But I'm not sure what's the best way to handle images that might be based on
 ;; some other type, so stick with this until it breaks.

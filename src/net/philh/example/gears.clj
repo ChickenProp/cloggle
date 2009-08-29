@@ -26,11 +26,11 @@
         da (* 2.0 (/ (. Math PI) teeth 4.0))
         +width (* width 0.5)
         -width (* width -0.5)]
-    (shade-model GL_FLAT)
+    (shade-model gl-flat)
     (normal3d 0.0 0.0 1.0)
 
     ;; draw front face
-    (with-primitive GL_QUAD_STRIP
+    (with-primitive gl-quad-strip
       (doseq [i (range (+ 1 teeth))]
         (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
           (vertex (* r0 (. Math cos angle))
@@ -48,7 +48,7 @@
                     +width)))))
     
     ;; draw front sides of teeth
-    (with-primitive GL_QUADS
+    (with-primitive gl-quads
       (doseq [i (range (+ 1 teeth))]
         (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
           (vertex (* r1 (. Math cos angle))
@@ -65,7 +65,7 @@
                   +width))))    
 
     ;; draw back face
-    (with-primitive GL_QUAD_STRIP
+    (with-primitive gl-quad-strip
       (doseq [i (range (+ 1 teeth))]
         (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
           (vertex (* r1 (. Math cos angle))
@@ -82,7 +82,7 @@
                   -width))))
 
     ;; draw back sides of teeth
-    (with-primitive GL_QUADS
+    (with-primitive gl-quads
       (doseq [i (range (+ 1 teeth))]
         (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
           (vertex (* r1 (. Math cos (+ angle (* 3.0 da))))
@@ -99,7 +99,7 @@
                   -width))))
 
     ;; draw outward faces of teeth
-    (with-primitive GL_QUAD_STRIP
+    (with-primitive gl-quad-strip
       (doseq [i (range (+ 1 teeth))]
         (let [angle (/ (* i 2.0 (. Math PI)) teeth)
               u-div (- (* r2 (. Math cos (+ angle da)))
@@ -146,10 +146,10 @@
       (vertex (* r1 (. Math cos 0)) (* r1 (. Math sin 0)) +width)
       (vertex (* r1 (. Math cos 0)) (* r1 (. Math sin 0)) -width))
     
-    (shade-model GL_SMOOTH)
+    (shade-model gl-smooth)
     
     ;; draw inside radius cylinder
-    (with-primitive GL_QUAD_STRIP
+    (with-primitive gl-quad-strip
       (doseq [i (range (+ 1 teeth))]
         (let [angle (/ (* i 2.0 (. Math PI)) teeth)]
           (normal3d (- (. Math cos angle)) (- (. Math sin angle)) 0.0)
@@ -184,8 +184,8 @@
                         (ref-set angle (+ (* 50 deltime) @angle))
                         (ref-set lasttime curtime)))
                      (with-context (. drawable getGL)
-                       (clear GL_DEPTH_BUFFER_BIT)
-                       (clear GL_COLOR_BUFFER_BIT)
+                       (clear gl-depth-buffer-bit)
+                       (clear gl-color-buffer-bit)
                        (push-matrix)
                        (rotated view-rotx 1.0 0.0 0.0)
                        (rotated view-roty 0.0 1.0 0.0)
@@ -225,51 +225,51 @@
                                       (. drawable getChosenGLCapabilities))))
                     (with-context gl
                       (set-swap-interval 1)
-                      (lightfv GL_LIGHT0 GL_POSITION pos 0)
-                      (enable GL_CULL_FACE)
-                      (enable GL_LIGHTING)
-                      (enable GL_LIGHT0)
-                      (enable GL_DEPTH_TEST)
+                      (lightfv gl-light0 gl-position pos 0)
+                      (enable gl-cull-face)
+                      (enable gl-lighting)
+                      (enable gl-light0)
+                      (enable gl-depth-test)
                     
                       (dosync (ref-set gear1 (gen-lists 1)))
-                      (new-list @gear1 GL_COMPILE)
-                      (materialfv GL_FRONT GL_AMBIENT_AND_DIFFUSE red 0)
+                      (new-list @gear1 gl-compile)
+                      (materialfv gl-front gl-ambient-and-diffuse red 0)
                       (gear 1.0 4.0 1.0 20 0.7)
                       (end-list)
                     
                       (dosync (ref-set gear2 (gen-lists 1)))
-                      (new-list @gear2 GL_COMPILE)
-                      (materialfv GL_FRONT GL_AMBIENT_AND_DIFFUSE green 0)
+                      (new-list @gear2 gl-compile)
+                      (materialfv gl-front gl-ambient-and-diffuse green 0)
                       (gear 0.5 2.0 2.0 10 0.7)
                       (end-list)
                     
                       (dosync (ref-set gear3 (gen-lists 1)))
-                      (new-list @gear3 GL_COMPILE)
-                      (materialfv GL_FRONT GL_AMBIENT_AND_DIFFUSE blue 0)
+                      (new-list @gear3 gl-compile)
+                      (materialfv gl-front gl-ambient-and-diffuse blue 0)
                       (gear 1.3 2.0 0.5 10 0.7)
                       (end-list)
                     
-                      (enable GL_NORMALIZE))))
+                      (enable gl-normalize))))
             
             (reshape [#^javax.media.opengl.GLAutoDrawable drawable
                       x y width height]
                      (let [h (double (/ height width))]
                        (with-context (.getGL drawable)
-                         (matrix-mode GL_PROJECTION)
+                         (matrix-mode gl-projection)
                          (load-identity)
                          (frustum -1.0 1.0 (- h) h 5.0 60.0)
-                         (matrix-mode GL_MODELVIEW)
+                         (matrix-mode gl-modelview)
                          (load-identity)
                          (translated 0.0 0.0 -40.0)
                          (.. System out
                              (println (str "GL_VENDOR: "
-                                           (get-string GL_VENDOR))))
+                                           (get-string gl-vendor))))
                          (.. System out
                              (println (str "GL_RENDERER: "
-                                           (get-string GL_RENDERER))))
+                                           (get-string gl-renderer))))
                          (.. System out
                              (println (str "GL_VERSION: "
-                                           (get-string GL_VERSION))))))))))
+                                           (get-string gl-version))))))))))
       (. frame add canvas)
       (. frame (setSize 300 300))
       (. frame

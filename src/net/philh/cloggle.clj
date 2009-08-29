@@ -145,7 +145,7 @@ be coerced to ints before the method is invoked on them."
                  (to-array (map ktype-coerce ktypes args)))))))
 
 (doseq [i gl-fields]
-  (def-ev (symbol (i :name)) (i :value)))
+  (def-ev (symbol (camel->lower-case (i :name))) (i :value)))
 (doseq [i gl-methods]
   (defn-from-method i))
 
@@ -189,13 +189,13 @@ upside-down as well."
         im (. ImageIO read (File. file))
         data (bi-get-pixels im)]
 
-    (bind-texture GL_TEXTURE_2D tex)
-    (tex-parameterf GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
-    (tex-parameterf GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
-    (tex-parameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP)
-    (tex-parameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP)
-    (tex-image2d GL_TEXTURE_2D 0 GL_RGBA (.getWidth im) (.getHeight im) 0
-                    GL_RGBA GL_UNSIGNED_BYTE (. java.nio.ByteBuffer wrap data))
+    (bind-texture gl-texture-2d tex)
+    (tex-parameterf gl-texture-2d gl-texture-min-filter gl-linear)
+    (tex-parameterf gl-texture-2d gl-texture-mag-filter gl-linear)
+    (tex-parameterf gl-texture-2d gl-texture-wrap-s gl-clamp)
+    (tex-parameterf gl-texture-2d gl-texture-wrap-t gl-clamp)
+    (tex-image2d gl-texture-2d 0 gl-rgba (.getWidth im) (.getHeight im) 0
+                    gl-rgba gl-unsigned-byte (. java.nio.ByteBuffer wrap data))
 
     tex))
 

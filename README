@@ -11,7 +11,8 @@ from within the body of with-context. The current context object can be
 accessed through the variable *opengl-context*.
 
 Within a context, functions and fields defined by opengl are exposed in the
-obvious manner: GL_FIELD, glFuncName are downcased with dashes (func-name ...).
+obvious manner: GL_FIELD_NAMES are downcased with dashes as in gl-field-names,
+glFuncNames are downcased with dashes (removing gl) as in (func-names ...).
 Functions operate only on the current context object; there is no way to pass
 a different one. But you can make a new call to with-context, or just use the
 java interop to the JOGL API directly.
@@ -23,14 +24,14 @@ Illustrative example (not working code):
     (use 'net.philh.cloggle)
     (def gl-obj (get-gl-object-somehow))
     (with-context gl-obj
-      (matrix-mode GL_PROJECTION)
+      (matrix-mode gl-projection)
       (ortho 0 300 0 300 1 128)
-      (matrix-mode GL_MODELVIEW)
+      (matrix-mode gl-modelview)
       (translated 0 0 -10)
 
-      (clear GL_DEPTH_BUFFER_BIT)
-      (clear GL_COLOR_BUFFER_BIT)
-      (with-primitive GL_TRIANGLES
+      (clear gl-depth-buffer-bit)
+      (clear gl-color-buffer-bit)
+      (with-primitive gl-triangles
         (vertex3d 30 0 0)
         (vertex3d 0 30 0)
         (vertex3d 0 0 0)))
@@ -91,7 +92,8 @@ Currently unknown.
 FUTURE PLANS
 
 * Fix bugs.
-* Rename fields: GL_DEPTH_BUFFER_BIT -> depth-buffer-bit.
+* Rename fields: gl-depth-buffer-bit -> depth-buffer-bit? (Would cause name
+  collisions.)
 * When the 'same' function goes by multiple names, make it available under a
   catch-all (like with vertex, but for more of them).
 * Add support for related interfaces, like GLAutoDrawable, GLEventListener and

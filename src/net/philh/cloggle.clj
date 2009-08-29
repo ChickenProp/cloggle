@@ -97,11 +97,6 @@ metadata."
 (derive ::doubles ::nums)
 (derive clojure.lang.Seqable ::nums)
 
-(defn intersperse
-  "Inserts x between elements of ys. If ys has fewer than 2 elements there is no effect."
-  [x ys]
-  (vec (cons (first ys) (mapcat (fn [y] [x y]) (rest ys)))))
-
 (defn split
   "Split on underscores, then split on the beginning of camel case words."
   [s]
@@ -110,10 +105,10 @@ metadata."
 
 (defn camel->lower-case
   "Converts a C-style GL_CONST_NAME or glFuncName to a Lisp-style gl-const-name or gl-func-name."
-  ([s] (apply str (intersperse \- (map #(.toLowerCase %) (split s)))))
+  ([s] (apply str (interpose \- (map #(.toLowerCase %) (split s)))))
   ([s prefix]
-     (apply str (intersperse \- (remove #(= % prefix) (map #(.toLowerCase %)
-                                                            (split s)))))))
+     (apply str (interpose \- (remove #(= % prefix) (map #(.toLowerCase %)
+                                                         (split s)))))))
 
 (defn defn-from-method
   "Takes an instance method of GL and makes two multifunctions on opengl-context

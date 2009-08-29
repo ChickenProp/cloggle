@@ -3,7 +3,8 @@
            [java.lang.reflect Field Method]
            [java.awt.image BufferedImage]
            [javax.imageio ImageIO]
-           [java.io File]))
+           [java.io File])
+  (:refer-clojure :exclude [flush]))
 
 (def *cloggle-time-load* (ref false))
 ;; Uncomment this to time how long cloggle takes to initialise.
@@ -20,9 +21,9 @@
 (defmacro with-primitive
   "Evaluates forms within (begin mode) and (end) expressions."
   [mode & forms]
-  `(try (gl-begin ~mode)
+  `(try (begin ~mode)
         ~@forms
-        (finally (gl-end))))
+        (finally (end))))
 
   (defn def-ev
     "Like def, but evaluates its first argument. And (currently) doesn't add
@@ -126,7 +127,7 @@ The other dispatches on weaker forms of the argument types, so [int int] becomes
  [::num ::num], and can be called with numeric arguments of any sort. They will
 be coerced to ints before the method is invoked on them."
   [#^Method meth]
-  (let [name (camel->lower-case (.getName meth))
+  (let [name (camel->lower-case (.getName meth) "gl")
         #^clojure.lang.MultiFn multi
         (var-get (or (ns-resolve *ns* (symbol name))
                      (def-ev (symbol name)
@@ -148,20 +149,23 @@ be coerced to ints before the method is invoked on them."
 (doseq [i gl-methods]
   (defn-from-method i))
 
+;; keep flush private, since it will cause conflicts
+(def #^{:private true} flush)
+
 (defn vertex
   "Given 2-4 numerical arguments, sends them to glVertexNd. Given a single
 seq argument, applies it to vertex."
   ([s]       (apply vertex s))
-  ([x y]     (gl-vertex2d x y))
-  ([x y z]   (gl-vertex3d x y z))
-  ([x y z w] (gl-vertex4d x y z w)))
+  ([x y]     (vertex2d x y))
+  ([x y z]   (vertex3d x y z))
+  ([x y z w] (vertex4d x y z w)))
 
 (defn color
   "Given 3 or 4 numerical arguments which should be in the range [0,1], sets the
 current color. Given a single seq argument, sets the color from its contents."
   ([s] (apply color s))
-  ([r g b] (gl-color3d r g b))
-  ([r g b a] (gl-color4d r g b a)))
+  ([r g b] (color3d r g b))
+  ([r g b a] (color4d r g b a)))
 
 ;; I assume all BufferedImages are byte-based, which I'm sure isn't true.
 ;; But I'm not sure what's the best way to handle images that might be based on
@@ -180,17 +184,17 @@ different ideas about the location of (0,0). Simply place texture coordinates
 upside-down as well."
   [#^String file] 
   (let [texa (int-array 1)
-        tex (do (gl-gen-textures 1 texa 0)
+        tex (do (gen-textures 1 texa 0)
                 (nth (seq texa) 0))
         im (. ImageIO read (File. file))
         data (bi-get-pixels im)]
 
-    (gl-bind-texture GL_TEXTURE_2D tex)
-    (gl-tex-parameterf GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
-    (gl-tex-parameterf GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
-    (gl-tex-parameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP)
-    (gl-tex-parameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP)
-    (gl-tex-image2d GL_TEXTURE_2D 0 GL_RGBA (.getWidth im) (.getHeight im) 0
+    (bind-texture GL_TEXTURE_2D tex)
+    (tex-parameterf GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+    (tex-parameterf GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
+    (tex-parameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP)
+    (tex-parameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP)
+    (tex-image2d GL_TEXTURE_2D 0 GL_RGBA (.getWidth im) (.getHeight im) 0
                     GL_RGBA GL_UNSIGNED_BYTE (. java.nio.ByteBuffer wrap data))
 
     tex))

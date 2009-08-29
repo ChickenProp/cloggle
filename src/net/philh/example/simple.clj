@@ -9,15 +9,15 @@
          (init [x])
          (reshape [drawable x y w h]
                   (with-context (.getGL drawable)
-                    (gl-matrix-mode GL_PROJECTION)
-                    (gl-load-identity)
-                    (gl-ortho 0 1 0 1 -1 1)
-                    (gl-matrix-mode GL_MODELVIEW)
-                    (gl-load-identity))) 
+                    (matrix-mode GL_PROJECTION)
+                    (load-identity)
+                    (ortho 0 1 0 1 -1 1)
+                    (matrix-mode GL_MODELVIEW)
+                    (load-identity))) 
          (display [drawable]
                   (with-context (.getGL drawable)
-                    (gl-clear GL_COLOR_BUFFER_BIT)
-                    (gl-clear GL_DEPTH_BUFFER_BIT)
+                    (clear GL_COLOR_BUFFER_BIT)
+                    (clear GL_DEPTH_BUFFER_BIT)
                     (color 1 0.5 1)
                     (with-primitive GL_TRIANGLES
                       (vertex 0 0)

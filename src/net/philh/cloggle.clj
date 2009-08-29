@@ -1,28 +1,28 @@
 (ns net.philh.cloggle
   (:import [javax.media.opengl GL]
-	   [java.lang.reflect Field Method]
-	   [java.awt.image BufferedImage]
-	   [javax.imageio ImageIO]
-	   [java.io File]))
+           [java.lang.reflect Field Method]
+           [java.awt.image BufferedImage]
+           [javax.imageio ImageIO]
+           [java.io File]))
 
 (def *cloggle-time-load* (ref false))
 ;; Uncomment this to time how long cloggle takes to initialise.
 ;; (dosync (ref-set *cloggle-time-load* (. java.lang.System nanoTime)))
 
-(def #^GL opengl-context nil)
+(def #^GL *opengl-context* nil)
 
-(defmacro ctx
+(defmacro with-context
   "Evaluates forms in the context of the GL object."
   [#^GL gl-obj & forms]
-  `(binding [opengl-context ~gl-obj]
-     ~@forms))
+  `(io! (binding [*opengl-context* ~gl-obj]
+          ~@forms)))
 
-(defmacro beg-end
+(defmacro with-primitive
   "Evaluates forms within (begin mode) and (end) expressions."
   [mode & forms]
-  `(do (glBegin ~mode)
-       ~@forms
-       (glEnd)))
+  `(try (glBegin ~mode)
+        ~@forms
+        (finally (glEnd))))
 
   (defn def-ev
     "Like def, but evaluates its first argument. And (currently) doesn't add
@@ -36,10 +36,10 @@ metadata."
   (def gl-methods (seq (.getDeclaredMethods gl)))
   (def gl-fields
        (map (fn [#^Field m]
-	      (hash-map :name  (.getName m)
-			:type  (.getType m)
-			:value (.get m gl)))
-	    (seq (.getDeclaredFields gl)))))
+              (hash-map :name  (.getName m)
+                        :type  (.getType m)
+                        :value (.get m gl)))
+            (seq (.getDeclaredFields gl)))))
 
 ;; getParameterTypes returns primitive types (int, float, etc.) and array types
 ;; ([I, [F, etc.) when possible. We also want to accept object types (Integer,
@@ -54,17 +54,17 @@ metadata."
 
       ;;map normal types to keyword types
       tmap {ipt     ::int,  fpt   ::float,  dpt    ::double,
-	    Integer ::int,  Float ::float,  Double ::double,
-	    iat     ::ints, fat   ::floats, dat    ::doubles,
-	    clojure.lang.Ratio ::num}
+            Integer ::int,  Float ::float,  Double ::double,
+            iat     ::ints, fat   ::floats, dat    ::doubles,
+            clojure.lang.Ratio ::num}
 
       ;;map keyword types to their weaker variants
       wmap {::int  ::num,  ::float  ::num,  ::double  ::num,
-	    ::ints ::nums, ::floats ::nums, ::doubles ::nums}
+            ::ints ::nums, ::floats ::nums, ::doubles ::nums}
 
       ;;map keyword types to functions coercing to them
       fmap {::int int, ::float float, ::double double,
-	    ::ints int-array, ::floats float-array, ::doubles double-array}]
+            ::ints int-array, ::floats float-array, ::doubles double-array}]
 
   (defn ptypes->ktypes
     "Takes a seq of primitive types, returns a vector of their keyword types."
@@ -110,21 +110,21 @@ be coerced to ints before the method is invoked on them."
   [#^Method meth]
   (let [name (.getName meth)
 
-	#^clojure.lang.MultiFn multi
-	(var-get (or (ns-resolve *ns* (symbol name))
-		     (def-ev (symbol name)
-		       (new clojure.lang.MultiFn name vals->ktypes
-			    :default #'clojure.core/global-hierarchy))))
+        #^clojure.lang.MultiFn multi
+        (var-get (or (ns-resolve *ns* (symbol name))
+                     (def-ev (symbol name)
+                       (new clojure.lang.MultiFn name vals->ktypes
+                            :default #'clojure.core/global-hierarchy))))
 
-	params (.getParameterTypes meth)
-	ktypes (ptypes->ktypes params)
-	ktypes-weak (weaken-ktypes ktypes)]
+        params (.getParameterTypes meth)
+        ktypes (ptypes->ktypes params)
+        ktypes-weak (weaken-ktypes ktypes)]
     (defmethod multi ktypes [& args]
-      (.invoke meth opengl-context (to-array args)))
+      (.invoke meth *opengl-context* (to-array args)))
     (if (not (= ktypes ktypes-weak))
       (defmethod multi ktypes-weak [& args]
-	(.invoke meth opengl-context
-		 (to-array (map ktype-coerce ktypes args)))))))
+        (.invoke meth *opengl-context*
+                 (to-array (map ktype-coerce ktypes args)))))))
 
 (doseq [i gl-fields]
   (def-ev (symbol (i :name)) (i :value)))
@@ -163,10 +163,10 @@ different ideas about the location of (0,0). Simply place texture coordinates
 upside-down as well."
   [#^String file] 
   (let [texa (int-array 1)
-	tex (do (glGenTextures 1 texa 0)
-		(nth (seq texa) 0))
-	im (. ImageIO read (File. file))
-	data (bi-get-pixels im)]
+        tex (do (glGenTextures 1 texa 0)
+                (nth (seq texa) 0))
+        im (. ImageIO read (File. file))
+        data (bi-get-pixels im)]
 
     (glBindTexture GL_TEXTURE_2D tex)
     (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
@@ -174,13 +174,13 @@ upside-down as well."
     (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP)
     (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP)
     (glTexImage2D GL_TEXTURE_2D 0 GL_RGBA (.getWidth im) (.getHeight im) 0
-		  GL_RGBA GL_UNSIGNED_BYTE (. java.nio.ByteBuffer wrap data))
+                  GL_RGBA GL_UNSIGNED_BYTE (. java.nio.ByteBuffer wrap data))
 
     tex))
 
 (if @*cloggle-time-load*
   (println "cloggle took"
-	   (double (/ (- (. java.lang.System nanoTime) @*cloggle-time-load*)
-		      1000000))
-	   "msecs to load."))
+           (double (/ (- (. java.lang.System nanoTime) @*cloggle-time-load*)
+                      1000000))
+           "msecs to load."))
 

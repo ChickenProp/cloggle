@@ -4,24 +4,24 @@ cloggle provides a Clojure interface to OpenGL through JOGL. Currently it is
 very thin, and only the GL interface is implemented; there is no support for
 GLAutoDrawable or the like.
 
-A GL object can be interfaced with using the ctx macro, which initialises a
-context for all calls to opengl functions which occur within its body. This is a
-dynamic context, so it will be in effect for functions called from within the
-body of ctx. The current context object can be accessed through the variable
-opengl-context.
+A GL object can be interfaced with using the with-context macro, which
+initialises a context for all calls to opengl functions which occur within its
+body. This is a dynamic context, so it will be in effect for functions called
+from within the body of with-context. The current context object can be
+accessed through the variable *opengl-context*.
 
 Within a context, functions and fields defined by opengl are exposed in the
 obvious manner: GL_FIELD, (glFunc arg1 arg2 ...). Functions operate only on the
 current context object; there is no way to pass a different one. But you can
-make a new call to ctx, or just use the java interop to the JOGL API directly.
+make a new call to with-context, or just use the java interop to the JOGL API directly.
 
-cloggle also provides the beg-end macro, which wraps its body between calls to
-glBegin and glEnd.
+cloggle also provides the with-primitive macro, which wraps its body between
+calls to glBegin and glEnd.
 
 Illustrative example (not working code):
     (use 'net.philh.cloggle)
     (def gl-obj (get-gl-object-somehow))
-    (ctx gl-obj
+    (with-context gl-obj
       (glMatrixMode GL_PROJECTION)
       (glOrtho 0 300 0 300 1 128)
       (glMatrixMode GL_MODELVIEW)
@@ -29,7 +29,7 @@ Illustrative example (not working code):
 
       (glClear GL_DEPTH_BUFFER_BIT)
       (glClear GL_COLOR_BUFFER_BIT)
-      (beg-end GL_TRIANGLES
+      (with-primitive GL_TRIANGLES
         (glVertex3d 30 0 0)
         (glVertex3d 0 30 0)
         (glVertex3d 0 0 0)))
@@ -65,7 +65,11 @@ EXPORTS
 The following symbols are provided, in addition to the standard gl* functions
 and GL_* variables:
 
-(beg-end mode body...)
+(with-context context body...)
+Macro. Bindings *opengl-context* to context within body. Also wraps body in
+io! (so don't try to use it inside a transaction).
+
+(with-primitive mode body...)
 Macro. Wraps body in calls to (glBegin mode) and (glEnd).
 
 (texture-from-file file)

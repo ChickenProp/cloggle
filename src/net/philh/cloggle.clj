@@ -20,9 +20,9 @@
 (defmacro with-primitive
   "Evaluates forms within (begin mode) and (end) expressions."
   [mode & forms]
-  `(try (glBegin ~mode)
+  `(try (gl-begin ~mode)
         ~@forms
-        (finally (glEnd))))
+        (finally (gl-end))))
 
   (defn def-ev
     "Like def, but evaluates its first argument. And (currently) doesn't add
@@ -96,6 +96,24 @@ metadata."
 (derive ::doubles ::nums)
 (derive clojure.lang.Seqable ::nums)
 
+(defn intersperse
+  "Inserts x between elements of ys. If ys has fewer than 2 elements there is no effect."
+  [x ys]
+  (vec (cons (first ys) (mapcat (fn [y] [x y]) (rest ys)))))
+
+(defn split
+  "Split on underscores, then split on the beginning of camel case words."
+  [s]
+  (mapcat #(.split % "(?!^)((?=[A-Z][a-z])|(?<![A-Z0-9])(?=[A-Z]))")
+          (.split s "_+")))
+
+(defn camel->lower-case
+  "Converts a C-style GL_CONST_NAME or glFuncName to a Lisp-style gl-const-name or gl-func-name."
+  ([s] (apply str (intersperse \- (map #(.toLowerCase %) (split s)))))
+  ([s prefix]
+     (apply str (intersperse \- (remove #(= % prefix) (map #(.toLowerCase %)
+                                                            (split s)))))))
+
 (defn defn-from-method
   "Takes an instance method of GL and makes two multifunctions on opengl-context
 of it.
@@ -108,8 +126,7 @@ The other dispatches on weaker forms of the argument types, so [int int] becomes
  [::num ::num], and can be called with numeric arguments of any sort. They will
 be coerced to ints before the method is invoked on them."
   [#^Method meth]
-  (let [name (.getName meth)
-
+  (let [name (camel->lower-case (.getName meth))
         #^clojure.lang.MultiFn multi
         (var-get (or (ns-resolve *ns* (symbol name))
                      (def-ev (symbol name)
@@ -135,16 +152,16 @@ be coerced to ints before the method is invoked on them."
   "Given 2-4 numerical arguments, sends them to glVertexNd. Given a single
 seq argument, applies it to vertex."
   ([s]       (apply vertex s))
-  ([x y]     (glVertex2d x y))
-  ([x y z]   (glVertex3d x y z))
-  ([x y z w] (glVertex4d x y z w)))
+  ([x y]     (gl-vertex2d x y))
+  ([x y z]   (gl-vertex3d x y z))
+  ([x y z w] (gl-vertex4d x y z w)))
 
 (defn color
   "Given 3 or 4 numerical arguments which should be in the range [0,1], sets the
 current color. Given a single seq argument, sets the color from its contents."
   ([s] (apply color s))
-  ([r g b] (glColor3d r g b))
-  ([r g b a] (glColor4d r g b a)))
+  ([r g b] (gl-color3d r g b))
+  ([r g b a] (gl-color4d r g b a)))
 
 ;; I assume all BufferedImages are byte-based, which I'm sure isn't true.
 ;; But I'm not sure what's the best way to handle images that might be based on
@@ -163,18 +180,18 @@ different ideas about the location of (0,0). Simply place texture coordinates
 upside-down as well."
   [#^String file] 
   (let [texa (int-array 1)
-        tex (do (glGenTextures 1 texa 0)
+        tex (do (gl-gen-textures 1 texa 0)
                 (nth (seq texa) 0))
         im (. ImageIO read (File. file))
         data (bi-get-pixels im)]
 
-    (glBindTexture GL_TEXTURE_2D tex)
-    (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
-    (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
-    (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP)
-    (glTexParameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP)
-    (glTexImage2D GL_TEXTURE_2D 0 GL_RGBA (.getWidth im) (.getHeight im) 0
-                  GL_RGBA GL_UNSIGNED_BYTE (. java.nio.ByteBuffer wrap data))
+    (gl-bind-texture GL_TEXTURE_2D tex)
+    (gl-tex-parameterf GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+    (gl-tex-parameterf GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
+    (gl-tex-parameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP)
+    (gl-tex-parameterf GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP)
+    (gl-tex-image2d GL_TEXTURE_2D 0 GL_RGBA (.getWidth im) (.getHeight im) 0
+                    GL_RGBA GL_UNSIGNED_BYTE (. java.nio.ByteBuffer wrap data))
 
     tex))
 

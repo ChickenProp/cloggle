@@ -25,7 +25,7 @@
         ~@forms
         (finally (end))))
 
-  (defn def-ev
+  (defn- def-ev
     "Like def, but evaluates its first argument. And (currently) doesn't add
 metadata."
     ([#^Symbol name]
@@ -34,8 +34,8 @@ metadata."
        (intern *ns* name val)))
 
 (let [#^Class gl GL] ; this is the only way I know to avoid reflection on it.
-  (def gl-methods (seq (.getDeclaredMethods gl)))
-  (def gl-fields
+  (def #^{:private true} gl-methods (seq (.getDeclaredMethods gl)))
+  (def #^{:private true} gl-fields
        (map (fn [#^Field m]
               (hash-map :name  (.getName m)
                         :type  (.getType m)
@@ -67,21 +67,21 @@ metadata."
       fmap {::int int, ::float float, ::double double,
             ::ints int-array, ::floats float-array, ::doubles double-array}]
 
-  (defn ptypes->ktypes
+  (defn- ptypes->ktypes
     "Takes a seq of primitive types, returns a vector of their keyword types."
     [ptypes]
     (vec (map #(or (tmap %) %) ptypes)))
-  (defn weaken-ktypes
+  (defn- weaken-ktypes
     "Takes a seq of keyword types, returns a vector of their weak forms."
     [ktypes]
     (vec (map #(or (wmap %) %) ktypes)))
 
-  (defn vals->ktypes
+  (defn- vals->ktypes
     "Takes multiple values, and returns a vector of their keyword types."
     [& vals]
     (vec (map #(or (tmap (class %)) (class %)) vals)))
 
-  (defn ktype-coerce
+  (defn- ktype-coerce
     "Coerces a value to a keyword type."
     [ktype val]
     ((get fmap ktype identity) val)))
@@ -97,13 +97,13 @@ metadata."
 (derive ::doubles ::nums)
 (derive clojure.lang.Seqable ::nums)
 
-(defn split
+(defn- split
   "Split on underscores, then split on the beginning of camel case words."
   [s]
   (mapcat #(.split % "(?!^)((?=[A-Z][a-z])|(?<![A-Z0-9])(?=[A-Z]))")
           (.split s "_+")))
 
-(defn camel->lower-case
+(defn- camel->lower-case
   "Converts a C-style GL_CONST_NAME or glFuncName to a Lisp-style gl-const-name or gl-func-name."
   ([s] (apply str (interpose \- (map #(.toLowerCase %) (split s)))))
   ([s prefix]
@@ -116,7 +116,7 @@ metadata."
                  (new clojure.lang.MultiFn name vals->ktypes
                       :default #'clojure.core/global-hierarchy)))))
 
-(defn defn-from-method
+(defn- defn-from-method
   "Takes an instance method of GL and makes two multifunctions on opengl-context
 of it.
 
@@ -195,7 +195,7 @@ vertex function."
 ;; I assume all BufferedImages are byte-based, which I'm sure isn't true.
 ;; But I'm not sure what's the best way to handle images that might be based on
 ;; some other type, so stick with this until it breaks.
-(defn bi-get-pixels
+(defn- bi-get-pixels
   "Returns a byte array of the pixel data in a BufferedImage."
   [#^BufferedImage bi]
   (let [buffer (.. bi (getRaster) (getDataBuffer))]

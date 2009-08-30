@@ -33,14 +33,14 @@ Illustrative example (not working code):
       (matrix-mode gl-projection)
       (ortho 0 300 0 300 1 128)
       (matrix-mode gl-modelview)
-      (translated 0 0 -10)
+      (translate 0 0 -10)
 
       (clear gl-depth-buffer-bit)
       (clear gl-color-buffer-bit)
       (with-primitive gl-triangles
-        (vertex3d 30 0 0)
-        (vertex3d 0 30 0)
-        (vertex3d 0 0 0)))
+        (vertex 30 0 0)
+        (vertex 0 30 0)
+        (vertex 0 0 0)))
 
 TYPECASTING
 
@@ -63,6 +63,12 @@ These calls will all have the same effect:
     (vertex2iv (float-array [5.5 10.7] 0))
     (vertex2iv [5 10] 0)
     (vertex2iv '(5.5 10.7) 0)
+
+As will calls to the vertex convenience function:
+
+    (vertex 5 10)
+    (vertex [5 10])
+    (vertex '(5 10))
 
 (Note that JOGL functions expecting an array typically also take an offset
 argument for the first element to use, so another equivalent call would be

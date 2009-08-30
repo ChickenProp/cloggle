@@ -10,9 +10,15 @@ body. This is a dynamic context, so it will be in effect for functions called
 from within the body of with-context. The current context object can be
 accessed through the variable *opengl-context*.
 
-Within a context, functions and fields defined by opengl are exposed in the
-obvious manner: GL_FIELD_NAMES are downcased with dashes as in gl-field-names,
-glFuncNames are downcased with dashes (removing gl) as in (func-names ...).
+Within a context, OpenGL functions and fields are exposed through Lispified
+names. Any GL_FIELD_NAME is accessible as gl-field-name (downcased with dashes),
+and any glFunctionName is accessible through calling (function-name ...).
+(Note: function names are stripped of the gl- prefix.)
+
+cloggle also provides some convenience functions which wrap gl functions with
+type suffixes (e.g. vertex2i, color3d, rotatef, etc). Any such function
+can be accessed using the simpler name (e.g. vertex, color, rotate).
+
 Functions operate only on the current context object; there is no way to pass
 a different one. But you can make a new call to with-context, or just use the
 java interop to the JOGL API directly.
@@ -65,7 +71,7 @@ argument for the first element to use, so another equivalent call would be
 EXPORTS
 
 The following symbols are provided, in addition to the standard gl* functions
-and GL_* variables:
+(and convenience functions) and GL_* variables:
 
 (with-context context body...)
 Macro. Bindings *opengl-context* to context within body. Also wraps body in
@@ -78,13 +84,6 @@ Macro. Wraps body in calls to (glBegin mode) and (glEnd).
 Function. Loads an image from file and returns a 2d RGBA texture representing
 it.
 
-(vertex points...)
-(color values...)
-Functions. Call the appropriate glFunction according to the provided arguments.
-Accept sequences as well as individual arguments, so (vertex [1 2]) and
-(vertex 1 2) are equivalent. vertex takes 2-4 arguments/seq indices, and color
-takes 3-4.
-
 BUGS
 
 Currently unknown.
@@ -94,8 +93,6 @@ FUTURE PLANS
 * Fix bugs.
 * Rename fields: gl-depth-buffer-bit -> depth-buffer-bit? (Would cause name
   collisions.)
-* When the 'same' function goes by multiple names, make it available under a
-  catch-all (like with vertex, but for more of them).
 * Add support for related interfaces, like GLAutoDrawable, GLEventListener and
   GLU.
 * Should vertex only accept up to 3 arguments? I don't know if there's any

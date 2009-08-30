@@ -115,6 +115,12 @@ metadata."
      (apply str (intersperse \- (remove #(= % prefix) (map #(.toLowerCase %)
                                                             (split s)))))))
 
+(defn- get-or-def-multi [name]
+  (var-get (or (ns-resolve *ns* (symbol name))
+               (def-ev (symbol name)
+                 (new clojure.lang.MultiFn name vals->ktypes
+                      :default #'clojure.core/global-hierarchy)))))
+
 (defn defn-from-method
   "Takes an instance method of GL and makes two multifunctions on opengl-context
 of it.
@@ -128,11 +134,7 @@ The other dispatches on weaker forms of the argument types, so [int int] becomes
 be coerced to ints before the method is invoked on them."
   [#^Method meth]
   (let [name (camel->lower-case (.getName meth) "gl")
-        #^clojure.lang.MultiFn multi
-        (var-get (or (ns-resolve *ns* (symbol name))
-                     (def-ev (symbol name)
-                       (new clojure.lang.MultiFn name vals->ktypes
-                            :default #'clojure.core/global-hierarchy))))
+        #^clojure.lang.MultiFn multi (get-or-def-multi name)
 
         params (.getParameterTypes meth)
         ktypes (ptypes->ktypes params)
@@ -149,23 +151,51 @@ be coerced to ints before the method is invoked on them."
 (doseq [i gl-methods]
   (defn-from-method i))
 
+(defn- stem [method]
+  "Returns a shorter version of a gl method name. For example, both vertex2i
+and vertex3f become vertex."
+  (let [match (re-matches #"([a-z\\-]+)[0-9]?(?:i|f|d)"
+                          (camel->lower-case (.getName method) "gl"))]
+    (if match (second match))))
+
+(defn- partition-methods [methods]
+  "Partitions methods based on the name stemming scheme."
+  (loop [methods methods partition nil]
+    (if methods
+      (let [method (first methods) match (stem method)]
+        (if match
+          (if (and partition (= match (stem (ffirst partition))))
+            (recur (next methods) (cons (cons method (first partition))
+                                        (rest partition)))
+            (recur (next methods) (cons (list method) partition)))
+          (recur (next methods) partition)))
+      partition)))
+
+(defn- defn-convenience-method
+  "Wraps multiple versions of the 'same' method into a single mutlifn. For
+example, vertex2i, vertex2f, vertex2d, (and 3i, 3f, 3d, etc) form a single
+vertex function."
+  [methods]
+  (let [name (stem (first methods))
+        #^clojure.lang.MultiFn multi (get-or-def-multi name)]
+    (doseq [meth methods]
+      (let [params (.getParameterTypes meth)
+            ktypes (ptypes->ktypes params)]
+        (defmethod multi ktypes [& args]
+          (.invoke meth *opengl-context* (to-array args)))))
+
+    ;; define a catch-all for seqs
+    (defmethod multi [::nums] [s]
+      (apply multi s))))
+
+(doseq [methods (partition-methods gl-methods)]
+  (if (and (> (count methods) 1)
+           ;; don't define map since it will conflict with clojure.core
+           (not (= (stem (first methods)) "map")))
+    (defn-convenience-method methods)))
+
 ;; keep flush private, since it will cause conflicts
 (def #^{:private true} flush)
-
-(defn vertex
-  "Given 2-4 numerical arguments, sends them to glVertexNd. Given a single
-seq argument, applies it to vertex."
-  ([s]       (apply vertex s))
-  ([x y]     (vertex2d x y))
-  ([x y z]   (vertex3d x y z))
-  ([x y z w] (vertex4d x y z w)))
-
-(defn color
-  "Given 3 or 4 numerical arguments which should be in the range [0,1], sets the
-current color. Given a single seq argument, sets the color from its contents."
-  ([s] (apply color s))
-  ([r g b] (color3d r g b))
-  ([r g b a] (color4d r g b a)))
 
 ;; I assume all BufferedImages are byte-based, which I'm sure isn't true.
 ;; But I'm not sure what's the best way to handle images that might be based on

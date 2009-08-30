@@ -186,30 +186,25 @@
                      (with-context (. drawable getGL)
                        (clear gl-depth-buffer-bit)
                        (clear gl-color-buffer-bit)
-                       (push-matrix)
-                       (rotated view-rotx 1.0 0.0 0.0)
-                       (rotated view-roty 0.0 1.0 0.0)
-                       (rotated view-rotz 0.0 0.0 1.0)
+                       (with-pushed-matrix
+                         (rotated view-rotx 1.0 0.0 0.0)
+                         (rotated view-roty 0.0 1.0 0.0)
+                         (rotated view-rotz 0.0 0.0 1.0)
 
-                       (push-matrix)
-                       (translated -3.0 -2.0 0.0)
-                       (rotated @angle 0.0 0.0 1.0)
-                       (call-list @gear1)
-                       (pop-matrix)
+                         (with-pushed-matrix
+                           (translated -3.0 -2.0 0.0)
+                           (rotated @angle 0.0 0.0 1.0)
+                           (call-list @gear1))
 
-                       (push-matrix)
-                       (translated 3.1 -2.0 0.0)
-                       (rotated (- (* -2.0 @angle) 9.0) 0.0 0.0 1.0)
-                       (call-list @gear2)
-                       (pop-matrix)
+                         (with-pushed-matrix
+                           (translated 3.1 -2.0 0.0)
+                           (rotated (- (* -2.0 @angle) 9.0) 0.0 0.0 1.0)
+                           (call-list @gear2))
 
-                       (push-matrix)
-                       (translated -3.1 4.2 0.0)
-                       (rotated (- (* -2.0 @angle) 25.0) 0.0 0.0 1.0)
-                       (call-list @gear3)
-                       (pop-matrix)
-
-                       (pop-matrix)))
+                         (with-pushed-matrix
+                           (translated -3.1 4.2 0.0)
+                           (rotated (- (* -2.0 @angle) 25.0) 0.0 0.0 1.0)
+                           (call-list @gear3)))))
             (displayChanged [drawable mode-changed device-changed])
             (init [#^javax.media.opengl.GLAutoDrawable drawable]
                   (let [gl (. drawable getGL)

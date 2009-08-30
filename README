@@ -64,7 +64,8 @@ These calls will all have the same effect:
     (vertex2iv [5 10] 0)
     (vertex2iv '(5.5 10.7) 0)
 
-As will calls to the vertex convenience function:
+As will calls to the vertex convenience function (provided the parameters are
+integral):
 
     (vertex 5 10)
     (vertex [5 10])
@@ -85,6 +86,9 @@ io! (so don't try to use it inside a transaction).
 
 (with-primitive mode body...)
 Macro. Wraps body in calls to (glBegin mode) and (glEnd).
+
+(with-pushed-matrix body...)
+Macro. Wraps body in calls to (glPushMatrix) and (glPopMatrix).
 
 (texture-from-file file)
 Function. Loads an image from file and returns a 2d RGBA texture representing

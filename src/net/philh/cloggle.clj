@@ -14,24 +14,31 @@
 
 (defmacro with-context
   "Evaluates forms in the context of the GL object."
-  [#^GL gl-obj & forms]
+  [#^GL gl-obj & body]
   `(io! (binding [*opengl-context* ~gl-obj]
-          ~@forms)))
+          ~@body)))
 
 (defmacro with-primitive
-  "Evaluates forms within (begin mode) and (end) expressions."
-  [mode & forms]
+  "Evaluates body within (begin mode) and (end) expressions."
+  [mode & body]
   `(try (begin ~mode)
-        ~@forms
+        ~@body
         (finally (end))))
 
-  (defn- def-ev
-    "Like def, but evaluates its first argument. And (currently) doesn't add
+(defmacro with-pushed-matrix
+  "Evaluates body within (push-matrix) and (pop-matrix) expressions."
+  [& body]
+  `(try (push-matrix)
+        ~@body
+        (finally (pop-matrix))))
+
+(defn- def-ev
+  "Like def, but evaluates its first argument. And (currently) doesn't add
 metadata."
-    ([#^Symbol name]
-       (intern *ns* name))
-    ([#^Symbol name val]
-       (intern *ns* name val)))
+  ([#^Symbol name]
+     (intern *ns* name))
+  ([#^Symbol name val]
+     (intern *ns* name val)))
 
 (let [#^Class gl GL] ; this is the only way I know to avoid reflection on it.
   (def #^{:private true} gl-methods (seq (.getDeclaredMethods gl)))

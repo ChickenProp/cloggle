@@ -94,6 +94,10 @@ Macro. Wraps body in calls to (glPushMatrix) and (glPopMatrix).
 Function. Loads an image from file and returns a 2d RGBA texture representing
 it.
 
+The flush function is not exported, as it would clash with the core function. To
+use it, fully qualify the name: net.philh.cloggle/flush. Similarly, cloggle does
+not provide a convenience function for glMap*.
+
 BUGS
 
 Currently unknown.
@@ -101,8 +105,6 @@ Currently unknown.
 FUTURE PLANS
 
 * Fix bugs.
-* Rename fields: gl-depth-buffer-bit -> depth-buffer-bit? (Would cause name
-  collisions.)
 * Add support for related interfaces, like GLAutoDrawable, GLEventListener and
   GLU.
 * Should vertex only accept up to 3 arguments? I don't know if there's any

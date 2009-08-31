@@ -12,7 +12,7 @@
 
 (def #^GL *opengl-context* nil)
 
-(defmacro with-context
+(defmacro with-gl
   "Evaluates forms in the context of the GL object."
   [#^GL gl-obj & body]
   `(io! (binding [*opengl-context* ~gl-obj]

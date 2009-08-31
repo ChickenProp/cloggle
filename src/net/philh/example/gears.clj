@@ -183,7 +183,7 @@
                               (ref-set frames 0)))
                         (ref-set angle (+ (* 50 deltime) @angle))
                         (ref-set lasttime curtime)))
-                     (with-context (. drawable getGL)
+                     (with-gl (. drawable getGL)
                        (clear gl-depth-buffer-bit)
                        (clear gl-color-buffer-bit)
                        (with-pushed-matrix
@@ -218,7 +218,7 @@
                     (.. System out
                         (println (str "Chosen GLCapabilities: "
                                       (. drawable getChosenGLCapabilities))))
-                    (with-context gl
+                    (with-gl gl
                       (set-swap-interval 1)
                       (lightfv gl-light0 gl-position pos 0)
                       (enable gl-cull-face)
@@ -249,7 +249,7 @@
             (reshape [#^javax.media.opengl.GLAutoDrawable drawable
                       x y width height]
                      (let [h (double (/ height width))]
-                       (with-context (.getGL drawable)
+                       (with-gl (.getGL drawable)
                          (matrix-mode gl-projection)
                          (load-identity)
                          (frustum -1.0 1.0 (- h) h 5.0 60.0)

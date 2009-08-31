@@ -4,11 +4,11 @@ cloggle provides a Clojure interface to OpenGL through JOGL. Currently it is
 very thin, and only the GL interface is implemented; there is no support for
 GLAutoDrawable or the like.
 
-A GL object can be interfaced with using the with-context macro, which
-initialises a context for all calls to opengl functions which occur within its
-body. This is a dynamic context, so it will be in effect for functions called
-from within the body of with-context. The current context object can be
-accessed through the variable *opengl-context*.
+A GL object can be interfaced with using the with-gl macro, which initialises a
+context for all calls to opengl functions which occur within its body. This is a
+dynamic context, so it will be in effect for functions called from within the
+body of with-context. The current context object can be accessed through the
+variable *opengl-context*.
 
 Within a context, OpenGL functions and fields are exposed through Lispified
 names. Any GL_FIELD_NAME is accessible as gl-field-name (downcased with dashes),
@@ -29,7 +29,7 @@ calls to glBegin and glEnd.
 Illustrative example (not working code):
     (use 'net.philh.cloggle)
     (def gl-obj (get-gl-object-somehow))
-    (with-context gl-obj
+    (with-gl gl-obj
       (matrix-mode gl-projection)
       (ortho 0 300 0 300 1 128)
       (matrix-mode gl-modelview)
@@ -80,7 +80,7 @@ EXPORTS
 The following symbols are provided, in addition to the standard gl* functions
 (and convenience functions) and GL_* variables:
 
-(with-context context body...)
+(with-gl context body...)
 Macro. Bindings *opengl-context* to context within body. Also wraps body in
 io! (so don't try to use it inside a transaction).
 

@@ -8,14 +8,14 @@
        (proxy [javax.media.opengl.GLEventListener] []
          (init [x])
          (reshape [drawable x y w h]
-                  (with-context (.getGL drawable)
+                  (with-gl (.getGL drawable)
                     (matrix-mode gl-projection)
                     (load-identity)
                     (ortho 0 1 0 1 -1 1)
                     (matrix-mode gl-modelview)
                     (load-identity))) 
          (display [drawable]
-                  (with-context (.getGL drawable)
+                  (with-gl (.getGL drawable)
                     (clear gl-color-buffer-bit)
                     (clear gl-depth-buffer-bit)
                     (color 1 0.5 1)

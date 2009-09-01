@@ -99,7 +99,10 @@ the core library. Similarly, no convenience function is provided for glMap*.
 
 BUGS
 
-Currently unknown.
+Convenience methods don't perform typecasting, which means no Ratio arguments to
+them. Arrays and Seqables are accepted, but only as the sole argument which then
+gets applied to the function. This is suitable for functions like vertex and
+color, but not for functions like light.
 
 FUTURE PLANS
 

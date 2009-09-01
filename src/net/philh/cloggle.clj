@@ -168,15 +168,17 @@ be coerced to ints before the method is invoked on them."
 (doseq [i gl-methods]
   (defn-from-method i))
 
-(defn- stem [#^Method method]
+(defn- stem
   "Returns a shorter version of a gl method name. For example, both vertex2i
 and vertex3f become vertex."
+  [#^Method method]
   (let [match (re-matches #"([a-z\\-]+)[0-9]?(?:i|f|d)"
                           (camel->lower-case (.getName method) "gl"))]
     (if match (second match))))
 
-(defn- partition-methods [methods]
+(defn- partition-methods
   "Partitions methods based on the name stemming scheme."
+  [methods]
   (loop [methods methods partition nil]
     (if methods
       (let [method (first methods) match (stem method)]

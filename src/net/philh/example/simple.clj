@@ -2,21 +2,23 @@
 ;; Vertices should be in bottom left corner, half way up right hand side, and
 ;; slightly inwards from top left corner.
 
+(set! *warn-on-reflection* true)
+
 (use 'net.philh.cloggle)
 
 (let [frame (new java.awt.Frame)
-        canvas (new javax.media.opengl.GLCanvas)]
+      canvas (new javax.media.opengl.GLCanvas)]
     (.addGLEventListener canvas
        (proxy [javax.media.opengl.GLEventListener] []
          (init [x])
-         (reshape [drawable x y w h]
+         (reshape [#^javax.media.opengl.GLAutoDrawable drawable x y w h]
                   (with-gl (.getGL drawable)
                     (matrix-mode gl-projection)
                     (load-identity)
                     (ortho 0 1 0 1 -1 1)
                     (matrix-mode gl-modelview)
                     (load-identity))) 
-         (display [drawable]
+         (display [#^javax.media.opengl.GLAutoDrawable drawable]
                   (with-gl (.getGL drawable)
                     (clear gl-color-buffer-bit)
                     (clear gl-depth-buffer-bit)

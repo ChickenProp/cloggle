@@ -1,4 +1,6 @@
-;; Opens a window and puts a triangle inside it. As simple as it gets.
+;; Opens a window and puts a purple triangle inside it. As simple as it gets.
+;; Vertices should be in bottom left corner, half way up right hand side, and
+;; slightly inwards from top left corner.
 
 (use 'net.philh.cloggle)
 

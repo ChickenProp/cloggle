@@ -106,16 +106,17 @@ metadata."
 
 (defn- split
   "Split on underscores, then split on the beginning of camel case words."
-  [s]
-  (mapcat #(.split % "(?!^)((?=[A-Z][a-z])|(?<![A-Z0-9])(?=[A-Z]))")
+  [#^String s]
+  (mapcat #(.split #^String % "(?!^)((?=[A-Z][a-z])|(?<![A-Z0-9])(?=[A-Z]))")
           (.split s "_+")))
 
 (defn- camel->lower-case
   "Converts a C-style GL_CONST_NAME or glFuncName to a Lisp-style gl-const-name or gl-func-name."
-  ([s] (apply str (interpose \- (map #(.toLowerCase %) (split s)))))
+  ([s] (apply str (interpose \- (map #(.toLowerCase #^String %) (split s)))))
   ([s prefix]
-     (apply str (interpose \- (remove #(= % prefix) (map #(.toLowerCase %)
-                                                         (split s)))))))
+     (apply str (interpose \- (remove #(= % prefix)
+				      (map #(.toLowerCase #^String %)
+					   (split s)))))))
 
 (defn- get-or-def-multi [name]
   (var-get (or (ns-resolve *ns* (symbol name))
@@ -124,13 +125,13 @@ metadata."
                       :default #'clojure.core/global-hierarchy)))))
 
 (defn- def-gl-method-strong
-  [multi method]
+  [#^clojure.lang.MultiFn multi #^Method method]
   (let [params (.getParameterTypes method)
 	ktypes (ptypes->ktypes params)]
     (defmethod multi ktypes [& args]
       (.invoke method *opengl-context* (to-array args)))))
 (defn- def-gl-method-weak
-  [multi method]
+  [#^clojure.lang.MultiFn multi #^Method method]
   (let [params (.getParameterTypes method)
 	ktypes (ptypes->ktypes params)
 	ktypes-weak (weaken-ktypes ktypes)]
@@ -138,7 +139,7 @@ metadata."
       (.invoke method *opengl-context*
 	       (to-array (map ktype-coerce ktypes args))))))
 (defn def-gl-method-both
-  [multi method]
+  [multi #^Method method]
   (let [params (.getParameterTypes method)
 	ktypes (ptypes->ktypes params)
 	ktypes-weak (weaken-ktypes ktypes)]
@@ -167,7 +168,7 @@ be coerced to ints before the method is invoked on them."
 (doseq [i gl-methods]
   (defn-from-method i))
 
-(defn- stem [method]
+(defn- stem [#^Method method]
   "Returns a shorter version of a gl method name. For example, both vertex2i
 and vertex3f become vertex."
   (let [match (re-matches #"([a-z\\-]+)[0-9]?(?:i|f|d)"

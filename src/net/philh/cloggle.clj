@@ -123,6 +123,29 @@ metadata."
                  (new clojure.lang.MultiFn name vals->ktypes
                       :default #'clojure.core/global-hierarchy)))))
 
+(defn- def-gl-method-strong
+  [multi method]
+  (let [params (.getParameterTypes method)
+	ktypes (ptypes->ktypes params)]
+    (defmethod multi ktypes [& args]
+      (.invoke method *opengl-context* (to-array args)))))
+(defn- def-gl-method-weak
+  [multi method]
+  (let [params (.getParameterTypes method)
+	ktypes (ptypes->ktypes params)
+	ktypes-weak (weaken-ktypes ktypes)]
+    (defmethod multi ktypes-weak [& args]
+      (.invoke method *opengl-context*
+	       (to-array (map ktype-coerce ktypes args))))))
+(defn def-gl-method-both
+  [multi method]
+  (let [params (.getParameterTypes method)
+	ktypes (ptypes->ktypes params)
+	ktypes-weak (weaken-ktypes ktypes)]
+    (def-gl-method-strong multi method)
+    (if (not= ktypes ktypes-weak)
+      (def-gl-method-weak multi method))))
+
 (defn- defn-from-method
   "Takes an instance method of GL and makes two multifunctions on opengl-context
 of it.
@@ -136,17 +159,8 @@ The other dispatches on weaker forms of the argument types, so [int int] becomes
 be coerced to ints before the method is invoked on them."
   [#^Method meth]
   (let [name (camel->lower-case (.getName meth) "gl")
-        #^clojure.lang.MultiFn multi (get-or-def-multi name)
-
-        params (.getParameterTypes meth)
-        ktypes (ptypes->ktypes params)
-        ktypes-weak (weaken-ktypes ktypes)]
-    (defmethod multi ktypes [& args]
-      (.invoke meth *opengl-context* (to-array args)))
-    (if (not (= ktypes ktypes-weak))
-      (defmethod multi ktypes-weak [& args]
-        (.invoke meth *opengl-context*
-                 (to-array (map ktype-coerce ktypes args)))))))
+        #^clojure.lang.MultiFn multi (get-or-def-multi name)]
+    (def-gl-method-both multi meth)))
 
 (doseq [i gl-fields]
   (def-ev (symbol (camel->lower-case (i :name))) (i :value)))
@@ -173,6 +187,11 @@ and vertex3f become vertex."
           (recur (next methods) partition)))
       partition)))
 
+;; .getDeclaredMethods seems to return them in the order i,f,d, which means that
+;; if a weak method overwrites another weak method, the new one will be more
+;; general.  If .getDeclaredMethods does not always return them in this order,
+;; this will not work properly. Best approach is probably to explicitly sort
+;; them by last letter, d > f > i.
 (defn- defn-convenience-method
   "Wraps multiple versions of the 'same' method into a single mutlifn. For
 example, vertex2i, vertex2f, vertex2d, (and 3i, 3f, 3d, etc) form a single
@@ -181,10 +200,7 @@ vertex function."
   (let [name (stem (first methods))
         #^clojure.lang.MultiFn multi (get-or-def-multi name)]
     (doseq [meth methods]
-      (let [params (.getParameterTypes meth)
-            ktypes (ptypes->ktypes params)]
-        (defmethod multi ktypes [& args]
-          (.invoke meth *opengl-context* (to-array args)))))
+      (def-gl-method-both multi meth))
 
     ;; define a catch-all for seqs
     (defmethod multi [::nums] [s]

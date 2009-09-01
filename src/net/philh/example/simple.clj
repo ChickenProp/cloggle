@@ -20,9 +20,10 @@
                     (clear gl-depth-buffer-bit)
                     (color 1 0.5 1)
                     (with-primitive gl-triangles
-                      (vertex 0 0)
-                      (vertex [1 0.5]) ; make sure vector arguments work.
-                      (vertex 0 1))))))
+		      ;; test: vectors, doubles, ints, floats, ratios all work.
+                      (vertex 0 0.0)
+                      (vertex [1 0.5])
+                      (vertex (float 0.1) (/ 9 10)))))))
     (.setSize canvas 100 100)
     (.add frame canvas)
     (.addWindowListener frame

@@ -71,7 +71,7 @@ integral):
     (vertex [5 10])
     (vertex '(5 10))
 
-(Note that JOGL functions expecting an array typically also take an offset
+Note that JOGL functions expecting an array typically also take an offset
 argument for the first element to use, so another equivalent call would be
 (vertex2iv [3 5 10] 1).
 
@@ -99,10 +99,17 @@ the core library. Similarly, no convenience function is provided for glMap*.
 
 BUGS
 
-Convenience methods don't perform typecasting, which means no Ratio arguments to
-them. Arrays and Seqables are accepted, but only as the sole argument which then
-gets applied to the function. This is suitable for functions like vertex and
-color, but not for functions like light.
+The typecasting of convenience methods is fragile: it relies on the order in
+which Java exposes the JOGL methods. It works for me, but might not for anyone
+else, and might stop working at any time.
+
+This does not apply when arguments to methods do not need to be typecast, or
+only need typecasting from int or float to float or double: (vertex 0 1),
+(vertex 3.1 4.1) and (vertex -1 2.1) should all work in any case, but (vertex 0
+(/ 1 2)) might call glVertex2i instead of glVertex2d. If this is the case,
+simple.clj will not display correctly. But it might also call glVertex2f, which
+won't be noticeable; or functions other than vertex might display this problem,
+which won't be caught by simple.clj.
 
 FUTURE PLANS
 

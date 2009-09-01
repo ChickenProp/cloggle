@@ -94,9 +94,8 @@ Macro. Wraps body in calls to (glPushMatrix) and (glPopMatrix).
 Function. Loads an image from file and returns a 2d RGBA texture representing
 it.
 
-The flush function is not exported, as it would clash with the core function. To
-use it, fully qualify the name: net.philh.cloggle/flush. Similarly, cloggle does
-not provide a convenience function for glMap*.
+The flush function is exported as gl-flush to avoid a namespace conflict with
+the core library. Similarly, no convenience function is provided for glMap*.
 
 BUGS
 

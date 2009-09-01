@@ -196,7 +196,8 @@ vertex function."
            (not (= (stem (first methods)) "map")))
     (defn-convenience-method methods)))
 
-;; keep flush private, since it will cause conflicts
+;; flush conflicts with the core library: provide gl-flush instead.
+(def gl-flush flush)
 (def #^{:private true} flush)
 
 ;; I assume all BufferedImages are byte-based, which I'm sure isn't true.

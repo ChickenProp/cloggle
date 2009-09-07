@@ -216,8 +216,11 @@ vertex function."
     (defn-convenience-method methods)))
 
 ;; flush conflicts with the core library: provide gl-flush instead.
-(def gl-flush flush)
-(def #^{:private true} flush)
+;; Without the anonymous fn, compiling this library breaks it:
+;; http://groups.google.com/group/clojure/browse_thread/thread/74d7f7216fc9355b
+((fn []
+   (def gl-flush flush)
+   (def #^{:private true} flush)))
 
 ;; I assume all BufferedImages are byte-based, which I'm sure isn't true.
 ;; But I'm not sure what's the best way to handle images that might be based on
@@ -247,7 +250,7 @@ upside-down as well."
     (tex-parameterf gl-texture-2d gl-texture-wrap-s gl-clamp)
     (tex-parameterf gl-texture-2d gl-texture-wrap-t gl-clamp)
     (tex-image2d gl-texture-2d 0 gl-rgba (.getWidth im) (.getHeight im) 0
-                    gl-rgba gl-unsigned-byte (. java.nio.ByteBuffer wrap data))
+		 gl-rgba gl-unsigned-byte (. java.nio.ByteBuffer wrap data))
 
     tex))
 

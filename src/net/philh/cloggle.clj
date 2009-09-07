@@ -222,7 +222,7 @@ vertex function."
    (def gl-flush flush)
    (def #^{:private true} flush)))
 
-;; I assume all BufferedImages are byte-based, which I'm sure isn't true.
+;; This assumes all BufferedImages are byte-based, which I'm sure isn't true.
 ;; But I'm not sure what's the best way to handle images that might be based on
 ;; some other type, so stick with this until it breaks.
 (defn- bi-get-pixels

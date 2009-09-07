@@ -115,8 +115,8 @@ metadata."
   ([s] (apply str (interpose \- (map #(.toLowerCase #^String %) (split s)))))
   ([s prefix]
      (apply str (interpose \- (remove #(= % prefix)
-				      (map #(.toLowerCase #^String %)
-					   (split s)))))))
+                                      (map #(.toLowerCase #^String %)
+                                           (split s)))))))
 
 (defn- get-or-def-multi [name]
   (var-get (or (ns-resolve *ns* (symbol name))
@@ -127,22 +127,22 @@ metadata."
 (defn- def-gl-method-strong
   [#^clojure.lang.MultiFn multi #^Method method]
   (let [params (.getParameterTypes method)
-	ktypes (ptypes->ktypes params)]
+        ktypes (ptypes->ktypes params)]
     (defmethod multi ktypes [& args]
       (.invoke method *opengl-context* (to-array args)))))
 (defn- def-gl-method-weak
   [#^clojure.lang.MultiFn multi #^Method method]
   (let [params (.getParameterTypes method)
-	ktypes (ptypes->ktypes params)
-	ktypes-weak (weaken-ktypes ktypes)]
+        ktypes (ptypes->ktypes params)
+        ktypes-weak (weaken-ktypes ktypes)]
     (defmethod multi ktypes-weak [& args]
       (.invoke method *opengl-context*
-	       (to-array (map ktype-coerce ktypes args))))))
+               (to-array (map ktype-coerce ktypes args))))))
 (defn def-gl-method-both
   [multi #^Method method]
   (let [params (.getParameterTypes method)
-	ktypes (ptypes->ktypes params)
-	ktypes-weak (weaken-ktypes ktypes)]
+        ktypes (ptypes->ktypes params)
+        ktypes-weak (weaken-ktypes ktypes)]
     (def-gl-method-strong multi method)
     (if (not= ktypes ktypes-weak)
       (def-gl-method-weak multi method))))
@@ -250,7 +250,7 @@ upside-down as well."
     (tex-parameterf gl-texture-2d gl-texture-wrap-s gl-clamp)
     (tex-parameterf gl-texture-2d gl-texture-wrap-t gl-clamp)
     (tex-image2d gl-texture-2d 0 gl-rgba (.getWidth im) (.getHeight im) 0
-		 gl-rgba gl-unsigned-byte (. java.nio.ByteBuffer wrap data))
+                 gl-rgba gl-unsigned-byte (. java.nio.ByteBuffer wrap data))
 
     tex))
 

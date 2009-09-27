@@ -236,21 +236,25 @@ vertex function."
 
 The texture will appear to be upside-down due to opengl and image formats having
 different ideas about the location of (0,0). Simply place texture coordinates
-upside-down as well."
-  [#^String file] 
+upside-down as well.
+
+This works for RGB and RGBA images. Other formats will probably break it."
+  [#^String file]
   (let [texa (int-array 1)
         tex (do (gen-textures 1 texa 0)
                 (nth (seq texa) 0))
         im (. ImageIO read (File. file))
-        data (bi-get-pixels im)]
+        data (bi-get-pixels im)
+        buf (java.nio.ByteBuffer/wrap data)
+        format (if (.. im getColorModel hasAlpha) gl-rgba gl-rgb)]
 
     (bind-texture gl-texture-2d tex)
     (tex-parameterf gl-texture-2d gl-texture-min-filter gl-linear)
     (tex-parameterf gl-texture-2d gl-texture-mag-filter gl-linear)
     (tex-parameterf gl-texture-2d gl-texture-wrap-s gl-clamp)
     (tex-parameterf gl-texture-2d gl-texture-wrap-t gl-clamp)
-    (tex-image2d gl-texture-2d 0 gl-rgba (.getWidth im) (.getHeight im) 0
-                 gl-rgba gl-unsigned-byte (. java.nio.ByteBuffer wrap data))
+    (tex-image2d gl-texture-2d 0 format (.getWidth im) (.getHeight im) 0
+                 format gl-unsigned-byte buf)
 
     tex))
 
